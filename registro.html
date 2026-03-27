@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style_registro.css">
+</head>
+<body>
+    <div class="registro_container">
+
+        <div class="fondo_verde">
+
+            <a href="index.php" class="btn-volver"></a>
+
+            <h2 class="titulo-registro">Registro</h2>
+
+            <p class="subtitulo">
+                Date de alta rellenando los siguientes datos.
+            </p>
+
+            <form action="procesar_registro.php" method="post" class="form-registro">
+
+                <div class="columnas">
+
+                    <div class="columna">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" required>
+
+                        <label>Apellido</label>
+                        <input type="text" name="apellido" required>
+
+                        <label>Fecha de nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" required>
+                    </div>
+
+                    <div class="columna">
+                        <label>DNI</label>
+                        <input type="number" name="dni" required>
+
+                        <label>E-mail</label>
+                        <input type="email" name="email" required>
+
+                        <label>Contraseña</label>
+                        <input type="password" name="contrasenia" required>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="btn-registrarse">Registrarse</button>
+
+            </form>
+
+        </div>
+
+    </div>
+</body>
+</html>
