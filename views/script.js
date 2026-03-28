@@ -30,17 +30,16 @@ function modificarLibro(isbn) {
             console.log("Datos recibidos:", data);
             
             if(data.success) {
-                // Llenar el formulario con los datos del libro
                 document.getElementById('mod_isbn').value = data.libro.isbn;
                 document.getElementById('mod_titulo').value = data.libro.titulo;
                 document.getElementById('mod_edicion').value = data.libro.edicion || '';
                 document.getElementById('mod_anio').value = data.libro.anio_publicacion;
-                document.getElementById('mod_autor').value = data.libro.autor; // ✅ Nombre del autor
-                document.getElementById('mod_editorial').value = data.libro.editorial; // ✅ Nombre de editorial
-                document.getElementById('mod_categoria').value = data.libro.categoria; // ✅ Nombre de categoría
-                document.getElementById('mod_genero').value = data.libro.genero; // ✅ Nombre de género
+                document.getElementById('mod_autor').value = data.libro.autor;
+                document.getElementById('mod_editorial').value = data.libro.editorial;
+                document.getElementById('mod_categoria').value = data.libro.categoria;
+                document.getElementById('mod_genero').value = data.libro.genero;
                 
-                console.log("✅ Formulario llenado, abriendo modal");
+                console.log("Formulario llenado, abriendo modal");
                 abrirModal('modalmodificarLibro');
             } else {
                 alert('Error al cargar los datos del libro');
@@ -52,10 +51,10 @@ function modificarLibro(isbn) {
         });
 }
 
-function modificarUsuario(dni) {  // ✅ Cambiar parámetro
+function modificarUsuario(dni) {
     console.log("Modificar usuario llamado con DNI:", dni);
     
-    fetch('obtener_usuario.php?dni=' + dni)  // ✅ Cambiar a dni
+    fetch('obtener_usuario.php?dni=' + dni)
         .then(response => response.json())
         .then(data => {
             console.log("📦 Datos recibidos:", data);
@@ -106,7 +105,7 @@ function exportCSVExcel() {
 	});
 }
 
-function exportCSVExcel() {
+function exportCSVExcel_U() {
 	$('#id_usuario').table2excel({
 		exclude: ".no-export",
 		filename: "download.xls",
@@ -121,7 +120,6 @@ function cambiarEstado(isbn, nuevoEstado) {
     console.log("Cambiando estado del libro ISBN:", isbn, "a:", nuevoEstado);
     
     if(confirm('¿Deseas cambiar el estado de este libro?')) {
-        // Enviar la solicitud mediante fetch
         fetch('cambiar_estado.php', {
             method: 'POST',
             headers: {
@@ -135,7 +133,7 @@ function cambiarEstado(isbn, nuevoEstado) {
                 alert('Estado actualizado correctamente');
             } else {
                 alert('Error al actualizar el estado: ' + data.message);
-                location.reload(); // Recargar para restaurar el valor anterior
+                location.reload();
             }
         })
         .catch(error => {
@@ -144,7 +142,6 @@ function cambiarEstado(isbn, nuevoEstado) {
             location.reload();
         });
     } else {
-        // Si cancela, recargar la página para restaurar el valor
         location.reload();
     }
 }

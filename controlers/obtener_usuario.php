@@ -3,11 +3,11 @@ require_once("conexion.php");
 
 header('Content-Type: application/json');
 
-if(isset($_GET['dni'])) {  
+if(isset($_GET['dni'])) { 
     $objeto = new conexion();
     $conexion = $objeto->conectar();
     
-    $dni = mysqli_real_escape_string($conexion, $_GET['dni']);  
+    $dni = mysqli_real_escape_string($conexion, $_GET['dni']);
     
     $sql = "SELECT 
                 usuario.id_usuario,
@@ -21,7 +21,7 @@ if(isset($_GET['dni'])) {
             FROM usuario
             JOIN persona ON usuario.persona_id_persona = persona.id_persona
             LEFT JOIN alumno ON alumno.usuario_id_usuario = usuario.id_usuario
-            WHERE persona.dni = '$dni'  
+            WHERE persona.dni = '$dni'
             LIMIT 1";
     
     $result = $conexion->query($sql);

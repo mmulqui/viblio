@@ -6,14 +6,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $objeto = new conexion();
     $conexion = $objeto->conectar();
     
-    
-    $id_usuario = mysqli_real_escape_string($conexion, $_POST['id_usuario']);  
+    $id_usuario = mysqli_real_escape_string($conexion, $_POST['id_usuario']);
     $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
     $apellido = mysqli_real_escape_string($conexion, $_POST['apellido']);
     $fecha_nacimiento = mysqli_real_escape_string($conexion, $_POST['fecha_nacimiento']);
     $email = mysqli_real_escape_string($conexion, $_POST['email']);
     $dni = mysqli_real_escape_string($conexion, $_POST['dni']);
-    
     
     $sql_persona = "SELECT persona_id_persona FROM usuario WHERE id_usuario = '$id_usuario'";
     $result = $conexion->query($sql_persona);
@@ -22,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $row = $result->fetch_assoc();
         $id_persona = $row['persona_id_persona'];
         
-        
         $sql_update_persona = "UPDATE persona SET 
                                 nombre = '$nombre',
                                 apellido = '$apellido',
@@ -30,10 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 dni = '$dni'
                                 WHERE id_persona = '$id_persona'";
         
-        
         $sql_update_usuario = "UPDATE usuario SET 
                                 email = '$email'";
-        
         
         if(!empty($_POST['contrasenia'])) {
             $contrasenia = mysqli_real_escape_string($conexion, $_POST['contrasenia']);
@@ -41,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         $sql_update_usuario .= " WHERE id_usuario = '$id_usuario'";
-        
         
         if($conexion->query($sql_update_persona) && $conexion->query($sql_update_usuario)) {
             $objeto->desconectar($conexion);

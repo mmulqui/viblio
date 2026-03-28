@@ -13,10 +13,6 @@
         $conexion = $objeto->conectar();
         $busqueda = $_GET["busqueda"] ?? "";
         $mostrartodos = isset($_GET["todos"]);
-        if (isset($_GET["busqueda"]) && isset($_GET["tab"]) && $_GET["tab"] === "libros") {
-            $busqueda = urlencode($_GET["busqueda"]);
-            header("Location: menu.php?tab=libros&busqueda=$busqueda");
-            exit;}
         if($mostrartodos){
             $sql = "SELECT libro.titulo,
                libro.edicion,
@@ -57,8 +53,7 @@
                                             OR editorial.nombre LIKE '%$busqueda%'
                                             OR categoria.nombre LIKE '%$busqueda%'
                                             OR genero.nombre LIKE '%$busqueda%'
-                                            OR libro.isbn LIKE '%$busqueda%';";
-                                            }
+                                            OR libro.isbn LIKE '%$busqueda%';";}
         $resultado = $objeto->consultar($sql, $conexion);
         $categorias = $objeto->consultar("select * from estado",$conexion);
 
@@ -173,7 +168,7 @@
                     <ion-icon name="reader-outline"></ion-icon>Exportar a Excel</button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda_usuarios" placeholder="Buscar..." values="<?php echo $busqueda_usuarios ?>">
+                        <input type="text" name="busqueda_usuarios" placeholder="Buscar..." values="<?php= $busqueda ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos_usuarios">Todos</button>
                     </form>
@@ -289,7 +284,7 @@
                 </button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?php echo $busqueda ?>">
+                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?php= $busqueda ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
                     </form>

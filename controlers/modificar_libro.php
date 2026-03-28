@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $objeto = new conexion();
     $conexion = $objeto->conectar();
     
-    
     $isbn = mysqli_real_escape_string($conexion, $_POST['isbn']);
     $titulo = mysqli_real_escape_string($conexion, $_POST['titulo']);
     $edicion = mysqli_real_escape_string($conexion, $_POST['edicion']);
@@ -15,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $editorial = mysqli_real_escape_string($conexion, $_POST['editorial']);
     $categoria = mysqli_real_escape_string($conexion, $_POST['categoria']);
     $genero = mysqli_real_escape_string($conexion, $_POST['genero']);
-    
     
     $sql = "CALL modificar_libro('$isbn', '$titulo', '$edicion', '$anio',1, '$autor', '$editorial', '$categoria', '$genero')";
     

@@ -28,7 +28,7 @@ body{
 
 .titulo{
     background-color: #0C815F;
-    width: 300px;
+    width: 269px;
     height: 95px;
     position: absolute;
     top: 0px;
@@ -152,11 +152,11 @@ table th {
 }
 
 table tr:nth-child(even) {
-    background-color: #f7f7f7;   
+    background-color: #f7f7f7;
 }
 
 table tr:hover {
-    background-color: #e8e8e8;   
+    background-color: #e8e8e8;
 }
 
 .btn-agregar {
@@ -333,7 +333,6 @@ table tr:hover {
     margin-top: 10px;
 }
 
-/* Responsive - En móviles vuelve a 1 columna */
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -350,7 +349,6 @@ table tr:hover {
     transform: scale(1.01);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-
 
 .acciones {
     text-align: center;
@@ -443,11 +441,10 @@ input[readonly] {
 }
 
 .fila-libro:hover {
-    background-color: #f0f9ff !important; 
+    background-color: #f0f9ff !important;
     transform: translateX(2px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 
 .content {
     background: white;
@@ -496,7 +493,7 @@ input[readonly] {
     gap: 8px;
     font-size: 16px;
     transition: all 0.3s;
-    position: relative; 
+    position: relative;
     right: 0;
     top: 0;
     box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
@@ -560,7 +557,7 @@ table tr:hover {
     padding: 35px;
     border-radius: 15px;
     width: 90%;
-    max-width: 700px; 
+    max-width: 700px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: aparecer 0.3s ease;
     position: relative;
@@ -652,7 +649,7 @@ table tr:hover {
     gap: 8px;
     font-size: 16px;
     transition: all 0.3s;
-    position: relative; 
+    position: relative;
     right: 0px;
     top: 0px;
     box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
@@ -691,7 +688,7 @@ table tr:hover {
     border-radius: 30px;
     padding: 5px 12px;
     width: 280px;
-    border: 2px solid #0d9469;  
+    border: 2px solid #0d9469;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: 0.3s ease;
     position: absolute;
@@ -713,7 +710,7 @@ table tr:hover {
 }
 
 .box button {
-    background: #10B981;      
+    background: #10B981;
     border: none;
     color: white;
     padding: 5px 5px;
@@ -726,7 +723,7 @@ table tr:hover {
 }
 
 .box button:hover {
-    background: #0d9469;       
+    background: #0d9469;
 }
 
 .box ion-icon {
