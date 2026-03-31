@@ -24,7 +24,7 @@ $stmt->bind_param(
     $_POST["apellido"],
     $_POST["fecha_nacimiento"],
     $_POST["dni"],
-    $_POST["email"],
+    $_POST["email"], // verificar que este dato sea unico por cada usuario
     $passwordSecurity
 );
 
