@@ -8,7 +8,7 @@
 </head>
 <body>
     <?php
-        require_once("conexion.php");
+        require_once("../models/conexion.php");
         $objeto = new conexion();
         $conexion = $objeto->conectar();
         $busqueda = $_GET["busqueda"] ?? "";

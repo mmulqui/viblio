@@ -12,7 +12,7 @@
     ?>
     <div class="container">
         <div class="container-form">
-            <form class="inicio_sesion" method="post" action="procesar.php">
+            <form class="inicio_sesion" method="post" action="../controlers/procesar.php">
                 <h2>Iniciar Sesion</h2>
                 <div class="container-input">
                     <input type="text" name="email" required>
@@ -24,7 +24,7 @@
                 </div>
                 <input type="submit" value="Iniciar">
                     <div class="recordar">¿Has olvidado tu Contraseña?
-                        <a href="#">Recordarme</a>
+                        <a href="../views/forgot_password.php">Recordarme</a>
                     </div>
                     <?php if (isset($_GET["error"])): ?>
                         <p style="color:red;"><?php echo $_GET["error"]; ?></p>
