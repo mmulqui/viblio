@@ -1,5 +1,5 @@
 <?php
-require_once("conexion.php");
+require_once("../models/conexion.php");
 
 $objeto = new conexion();
 $conexion = $objeto->conectar();
@@ -28,12 +28,12 @@ if ($resultado && $resultado->num_rows > 0) {
 
     echo "<script>
             alert('Usuario eliminado exitosamente');
-            window.location.href='menu.php?tab=usuario';
+            window.location.href='../views/menu.php?tab=usuario';
         </script>";
 } else {
     echo "<script>
             alert('No se encontró una persona con ese DNI');
-            window.location.href='menu.php?tab=usuario';
+            window.location.href='../views/menu.php?tab=usuario';
         </script>";
 }
 

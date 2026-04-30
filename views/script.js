@@ -85,13 +85,13 @@ function modificarUsuario(dni) {
 
 function eliminarlibro(isbn) {
     if (confirm("¿Estas seguro de eliminar el libro con ISBN: "+ isbn +"?")){
-        window.location.href = "eliminar_libro.php?isbn=" + isbn;
+        window.location.href = "../controlers/eliminar_libro.php?isbn=" + isbn;
     }
 }
 
 function eliminarUsuario(dni) {
     if (confirm("¿Estas seguro de eliminar al Usuario con DNI: "+ dni +"?")){
-        window.location.href = "eliminar_usuario.php?dni=" + dni;
+        window.location.href = "../controlers/eliminar_usuario.php?dni=" + dni;
     }
 }
 

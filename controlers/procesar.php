@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Tu contraseña necesita ser actualizada. Por favor, usá la opción '¿Olvidaste tu contraseña?' para crear una nueva."));
                 exit();
             } else {
-                header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Contraseña incorrecta"));
+                header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Email o contraseña incorrecto"));
                 exit();
             }
         } else {
@@ -37,12 +37,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: /login_viblio/view_bibliotecario/views/menu.php");
                 exit();
             } else {
-                header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Contraseña incorrecta"));
+                header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Email o contraseña incorrecto"));
                 exit();
             }
         }
     } else {
-        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("El email no está registrado"));
+        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Email o contraseña incorrecto"));
         exit();
     }
 
