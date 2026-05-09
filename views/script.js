@@ -24,7 +24,7 @@ window.onclick = function(event) {
 function modificarLibro(isbn) {
     console.log("Modificar libro llamado con ISBN:", isbn);
     
-    fetch('obtener_libro.php?isbn=' + isbn)
+    fetch('../controlers/obtener_libro.php?isbn=' + isbn)
         .then(response => response.json())
         .then(data => {
             console.log("Datos recibidos:", data);
@@ -54,7 +54,7 @@ function modificarLibro(isbn) {
 function modificarUsuario(dni) {
     console.log("Modificar usuario llamado con DNI:", dni);
     
-    fetch('obtener_usuario.php?dni=' + dni)
+    fetch('../controlers/obtener_usuario.php?dni=' + dni)
         .then(response => response.json())
         .then(data => {
             console.log("📦 Datos recibidos:", data);

@@ -8,9 +8,12 @@
 </head>
 <body>
     <?php
+        session_start();
         require_once("../models/conexion.php");
+        require_once("../controlers/user_sesion.php");
         $objeto = new conexion();
         $conexion = $objeto->conectar();
+        $id_usuario_logueado = (int) $_SESSION["id_usuario"];
         $busqueda = $_GET["busqueda"] ?? "";
         $mostrartodos = isset($_GET["todos"]);
         if($mostrartodos){
@@ -76,6 +79,7 @@
                     JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
                     WHERE pf.tipo_perfil = 'alumno';";
         } else { $sql_u = "SELECT 
+                                u.id_usuario
                                 p.dni,
                                 p.nombre,
                                 p.apellido,
@@ -202,12 +206,16 @@
                                 <td><?Php echo $fila ["numero_prestamos"]?></td>
                                 <td><?Php echo $fila ["numero_multas"]?></td>
                                 <td class="acciones">
+                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuarrio"]));?>
                                     <button class="btn-modificar" onclick="modificarUsuario('<?php echo $fila['dni']?>')" title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
                                     <button class="btn-eliminar" onclick="eliminarUsuario('<?php echo $fila['dni']?>')" title="Eliminar">
                                         <ion-icon name="trash-outline"></ion-icon> 
                                     </button>
+                                    <?php else: ?>
+                                        <span title="No podes editar tu propio usuario">-</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php } ?>

@@ -1,5 +1,15 @@
 <?php
+session_start();
 require_once("conexion.php");
+require_once("user_sesion.php");
+
+$id_usuario_logueado = (int) $_SESSION["id_usuario"];
+$id_usuario_editar = (int) $_POST["id_usuario"];
+
+if (mismoUsuario($id_usuario_logueado, $id_usuario_editar)) {
+    header("Location: menu.php?error=No podes editar tu propio usuario");
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
