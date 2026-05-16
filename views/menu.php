@@ -1,3 +1,8 @@
+<?php
+session_start();
+require_once("../models/conexion.php");
+require_once("../controlers/user_sesion.php");
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +13,6 @@
 </head>
 <body>
     <?php
-        session_start();
-        require_once("../models/conexion.php");
-        require_once("../controlers/user_sesion.php");
         $objeto = new conexion();
         $conexion = $objeto->conectar();
         $id_usuario_logueado = (int) $_SESSION["id_usuario"];
@@ -79,7 +81,7 @@
                     JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
                     WHERE pf.tipo_perfil = 'alumno';";
         } else { $sql_u = "SELECT 
-                                u.id_usuario
+                                u.id_usuario,
                                 p.dni,
                                 p.nombre,
                                 p.apellido,
@@ -206,7 +208,7 @@
                                 <td><?Php echo $fila ["numero_prestamos"]?></td>
                                 <td><?Php echo $fila ["numero_multas"]?></td>
                                 <td class="acciones">
-                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuarrio"]));?>
+                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuario"]));?>
                                     <button class="btn-modificar" onclick="modificarUsuario('<?php echo $fila['dni']?>')" title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
@@ -292,7 +294,7 @@
                 </button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?php= $busqueda ?>">
+                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?= htmlspecialchars($busqueda) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
                     </form>
