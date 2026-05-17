@@ -1,7 +1,24 @@
 <?php
-session_start();
+require_once("../controlers/auth.php");
+verificarSesion();
+
+if (empty($_SESSION["id_usuario"])) {
+    header("Location: /login_viblio/view_bibliotecario/views/index.php");
+    exit();
+}
+if (time() - ($_SESSION["last_activity"] ?? 0) > 1800) {
+    session_destroy();
+    header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Sesión expirada"));
+    exit();
+}
+$_SESSION["last_activity"] = time();
+
 require_once("../models/conexion.php");
 require_once("../controlers/user_sesion.php");
+
+$objeto    = new conexion();
+$conexion  = $objeto->conectar();
+$id_usuario_logueado = (int) $_SESSION["id_usuario"];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,9 +30,6 @@ require_once("../controlers/user_sesion.php");
 </head>
 <body>
     <?php
-        $objeto = new conexion();
-        $conexion = $objeto->conectar();
-        $id_usuario_logueado = (int) $_SESSION["id_usuario"];
         $busqueda = $_GET["busqueda"] ?? "";
         $mostrartodos = isset($_GET["todos"]);
         if($mostrartodos){
@@ -208,7 +222,7 @@ require_once("../controlers/user_sesion.php");
                                 <td><?Php echo $fila ["numero_prestamos"]?></td>
                                 <td><?Php echo $fila ["numero_multas"]?></td>
                                 <td class="acciones">
-                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuario"]));?>
+                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuario"])):?>
                                     <button class="btn-modificar" onclick="modificarUsuario('<?php echo $fila['dni']?>')" title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
