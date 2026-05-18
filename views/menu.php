@@ -378,6 +378,13 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                 <h2>Gestion de Multas</h2>
             </div>
         </div>
+        <div id="logout" class="tab_conten">
+            <li>
+                <a href="logout.php" onclick="return confirm('¿Cerrar sesión?')">
+                    <ion-icon name="log-out-outline"></ion-icon>Salir
+                </a>
+            </li>
+        </div>
     </div>
     <div id="modalModificarUsuario" class="modal">
         <div class="modal-contenido">
