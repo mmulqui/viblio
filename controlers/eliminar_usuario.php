@@ -17,14 +17,8 @@ if ($resultado && $resultado->num_rows > 0) {
         $filaU = $resUsuario->fetch_assoc();
         $id_usuario = $filaU["id_usuario"];
 
-        $conexion->query("DELETE FROM alumno WHERE usuario_id_usuario = '$id_usuario'");
-        $conexion->query("DELETE FROM bibliotecario WHERE usuario_id_usuario = '$id_usuario'");
-        $conexion->query("DELETE FROM profesor WHERE usuario_id_usuario = '$id_usuario'");
-
-        $conexion->query("DELETE FROM usuario WHERE id_usuario = '$id_usuario'");
+        $conexion->query("UPDATE usuario SET activo = 0 WHERE id_usuario = '$id_usuario'");
     }
-
-    $conexion->query("DELETE FROM persona WHERE id_persona = '$id_persona'");
 
     echo "<script>
             alert('Usuario eliminado exitosamente');

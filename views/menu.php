@@ -81,6 +81,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
         if($todos_usuarios){
             $sql_u = "SELECT 
                         u.id_usuario, 
+                        u.activo,
                         p.nombre, 
                         p.apellido, 
                         p.fecha_nacimiento,
@@ -93,9 +94,10 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                     JOIN usuario u ON p.id_persona = u.persona_id_persona
                     JOIN perfil pf ON u.id_perfil = pf.id_perfil
                     JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                    WHERE pf.tipo_perfil = 'alumno';";
+                    WHERE u.activo = 1;";
         } else { $sql_u = "SELECT 
                                 u.id_usuario,
+                                u.activo,
                                 p.dni,
                                 p.nombre,
                                 p.apellido,
@@ -108,7 +110,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                             JOIN usuario u ON p.id_persona = u.persona_id_persona
                             JOIN perfil pf ON u.id_perfil = pf.id_perfil
                             JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                            WHERE pf.tipo_perfil = 'alumno'
+                            WHERE u.activo = 1
                                         AND (p.nombre LIKE '%$busqueda_usuarios%' OR
                                             p.apellido LIKE '%$busqueda_usuarios%' OR
                                             p.dni LIKE '%$busqueda_usuarios%' OR
@@ -126,6 +128,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                 <li><a onclick="showtab('prestamos')"><ion-icon name="pricetag-outline"></ion-icon>Prestamos</a></li>
                 <li><a onclick="showtab('reservas')"><ion-icon name="bookmark-outline"></ion-icon>Reservas</a></li>
                 <li><a onclick="showtab('multas')"><ion-icon name="warning-outline"></ion-icon>Multas</a></li>
+                <li><a href="logout.php" onclick="return confirm('¿Cerrar sesión?')"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
             </ul>
         </div>
     </div>
@@ -377,13 +380,6 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
             <div class="encabezado">
                 <h2>Gestion de Multas</h2>
             </div>
-        </div>
-        <div id="logout" class="tab_conten">
-            <li>
-                <a href="logout.php" onclick="return confirm('¿Cerrar sesión?')">
-                    <ion-icon name="log-out-outline"></ion-icon>Salir
-                </a>
-            </li>
         </div>
     </div>
     <div id="modalModificarUsuario" class="modal">
