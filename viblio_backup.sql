@@ -32,7 +32,7 @@ CREATE TABLE `alumno` (
   PRIMARY KEY (`id_alumno`,`usuario_id_usuario`),
   KEY `fk_alumno_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_alumno_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `alumno` (
 
 LOCK TABLES `alumno` WRITE;
 /*!40000 ALTER TABLE `alumno` DISABLE KEYS */;
-INSERT INTO `alumno` VALUES (7,0,0,9),(10,0,0,12);
+INSERT INTO `alumno` VALUES (7,0,0,9),(16,0,0,18);
 /*!40000 ALTER TABLE `alumno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,6 +58,7 @@ CREATE TABLE `autor` (
   `nombre` varchar(50) NOT NULL,
   `nacionalidad` varchar(50) DEFAULT NULL,
   `biografia` varchar(1000) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_autor`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -68,7 +69,7 @@ CREATE TABLE `autor` (
 
 LOCK TABLES `autor` WRITE;
 /*!40000 ALTER TABLE `autor` DISABLE KEYS */;
-INSERT INTO `autor` VALUES (1,NULL,'J. R. R. Tolkien',NULL,NULL),(2,NULL,'J. R. R. Tolkien',NULL,NULL),(3,NULL,'J. R. R. Tolkien',NULL,NULL),(4,NULL,'J. R. R. Tolkien',NULL,NULL),(5,NULL,'yo',NULL,NULL),(6,NULL,'George Orwell',NULL,NULL),(7,NULL,'undefined',NULL,NULL),(8,NULL,'Gabriel García Márquez',NULL,NULL),(9,NULL,'qsy',NULL,NULL),(10,NULL,'asdasd',NULL,NULL);
+INSERT INTO `autor` VALUES (1,NULL,'J. R. R. Tolkien',NULL,NULL,1),(2,NULL,'J. R. R. Tolkien',NULL,NULL,1),(3,NULL,'J. R. R. Tolkien',NULL,NULL,1),(4,NULL,'J. R. R. Tolkien',NULL,NULL,1),(5,NULL,'yo',NULL,NULL,1),(6,NULL,'George Orwell',NULL,NULL,1),(7,NULL,'undefined',NULL,NULL,1),(8,NULL,'Gabriel García Márquez',NULL,NULL,1),(9,NULL,'qsy',NULL,NULL,1),(10,NULL,'asdasd',NULL,NULL,1);
 /*!40000 ALTER TABLE `autor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,6 +135,7 @@ DROP TABLE IF EXISTS `categoria`;
 CREATE TABLE `categoria` (
   `id_categoria` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(50) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_categoria`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -144,7 +146,7 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'Fantasía'),(2,'Fantasía'),(3,'Fantasía'),(4,'Fantasía'),(5,'Fantasía'),(6,'Ciencia ficción'),(7,'terro'),(8,'Ficción literaria'),(9,'asdasd'),(10,'asdasdasd');
+INSERT INTO `categoria` VALUES (1,'Fantasía',1),(2,'Fantasía',1),(3,'Fantasía',1),(4,'Fantasía',1),(5,'Fantasía',1),(6,'Ciencia ficción',1),(7,'terro',1),(8,'Ficción literaria',1),(9,'asdasd',1),(10,'asdasdasd',1);
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -160,6 +162,7 @@ CREATE TABLE `editorial` (
   `nombre` varchar(100) NOT NULL,
   `sitioweb` varchar(250) DEFAULT NULL,
   `id_pais` int DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_editorial`),
   KEY `id_pais` (`id_pais`),
   CONSTRAINT `editorial_ibfk_1` FOREIGN KEY (`id_pais`) REFERENCES `pais` (`id_pais`)
@@ -172,7 +175,7 @@ CREATE TABLE `editorial` (
 
 LOCK TABLES `editorial` WRITE;
 /*!40000 ALTER TABLE `editorial` DISABLE KEYS */;
-INSERT INTO `editorial` VALUES (1,'Minotauro',NULL,NULL),(2,'Minotauro',NULL,NULL),(3,'Minotauro',NULL,NULL),(4,'Minotauro',NULL,NULL),(5,'Bloomsbury',NULL,NULL),(6,'Secker & Warburg',NULL,NULL),(7,'undefined',NULL,NULL),(8,' Editorial Sudamericana',NULL,NULL),(9,'sada',NULL,NULL),(10,'asdasdasd',NULL,NULL);
+INSERT INTO `editorial` VALUES (1,'Minotauro',NULL,NULL,1),(2,'Minotauro',NULL,NULL,1),(3,'Minotauro',NULL,NULL,1),(4,'Minotauro',NULL,NULL,1),(5,'Bloomsbury',NULL,NULL,1),(6,'Secker & Warburg',NULL,NULL,1),(7,'undefined',NULL,NULL,1),(8,' Editorial Sudamericana',NULL,NULL,1),(9,'sada',NULL,NULL,1),(10,'asdasdasd',NULL,NULL,1);
 /*!40000 ALTER TABLE `editorial` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -210,6 +213,7 @@ CREATE TABLE `genero` (
   `id_genero` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(50) NOT NULL,
   `descripcion` varchar(250) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_genero`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -220,7 +224,7 @@ CREATE TABLE `genero` (
 
 LOCK TABLES `genero` WRITE;
 /*!40000 ALTER TABLE `genero` DISABLE KEYS */;
-INSERT INTO `genero` VALUES (1,'Épico',NULL),(2,'Épico',NULL),(3,'Épico',NULL),(4,'Épico',NULL),(5,'Aventura',NULL),(6,'Distopía',NULL),(7,'undefined',NULL),(8,'Realismo mágico',NULL),(9,'asdasd',NULL),(10,'asdasdasd',NULL);
+INSERT INTO `genero` VALUES (1,'Épico',NULL,1),(2,'Épico',NULL,1),(3,'Épico',NULL,1),(4,'Épico',NULL,1),(5,'Aventura',NULL,1),(6,'Distopía',NULL,1),(7,'undefined',NULL,1),(8,'Realismo mágico',NULL,1),(9,'asdasd',NULL,1),(10,'asdasdasd',NULL,1);
 /*!40000 ALTER TABLE `genero` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -238,6 +242,7 @@ CREATE TABLE `insumos` (
   `cantidad_total` int unsigned NOT NULL,
   `cantidad_disponible` int unsigned NOT NULL,
   `id_usuarios` int DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_insumos`),
   KEY `id_usuarios` (`id_usuarios`),
   CONSTRAINT `insumos_ibfk_1` FOREIGN KEY (`id_usuarios`) REFERENCES `usuario` (`id_usuario`)
@@ -267,6 +272,7 @@ CREATE TABLE `libro` (
   `anio_publicacion` year NOT NULL,
   `isbn` int NOT NULL,
   `estado` tinyint NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_libro`),
   UNIQUE KEY `isbn` (`isbn`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -278,7 +284,7 @@ CREATE TABLE `libro` (
 
 LOCK TABLES `libro` WRITE;
 /*!40000 ALTER TABLE `libro` DISABLE KEYS */;
-INSERT INTO `libro` VALUES (2,'Harry Potter y la piedra filosofal','1ra edición',1997,978074753,1),(3,'1984','1ra edición',1949,978045,1);
+INSERT INTO `libro` VALUES (2,'Harry Potter y la piedra filosofal','1ra edición',1997,978074753,1,1),(3,'1984','1ra edición',1949,978045,1,1);
 /*!40000 ALTER TABLE `libro` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -430,6 +436,7 @@ DROP TABLE IF EXISTS `perfil`;
 CREATE TABLE `perfil` (
   `id_perfil` int NOT NULL AUTO_INCREMENT,
   `tipo_perfil` varchar(50) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_perfil`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -440,7 +447,7 @@ CREATE TABLE `perfil` (
 
 LOCK TABLES `perfil` WRITE;
 /*!40000 ALTER TABLE `perfil` DISABLE KEYS */;
-INSERT INTO `perfil` VALUES (1,'alumno'),(2,'alumno'),(3,'alumno'),(4,'alumno'),(5,'alumno'),(6,'alumno');
+INSERT INTO `perfil` VALUES (1,'alumno',1),(2,'alumno',1),(3,'alumno',1),(4,'alumno',1),(5,'alumno',1),(6,'alumno',1);
 /*!40000 ALTER TABLE `perfil` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -459,7 +466,7 @@ CREATE TABLE `persona` (
   `dni` varchar(20) NOT NULL,
   PRIMARY KEY (`id_persona`),
   UNIQUE KEY `unique_dni` (`dni`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -468,7 +475,7 @@ CREATE TABLE `persona` (
 
 LOCK TABLES `persona` WRITE;
 /*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(13,'asdasda','asdasd','2002-02-12','1231231231');
+INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(20,'asdf','asfasd','2029-11-11','434443434');
 /*!40000 ALTER TABLE `persona` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -721,6 +728,7 @@ CREATE TABLE `usuario` (
   `avatar` blob,
   `id_perfil` int DEFAULT NULL,
   `persona_id_persona` int NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT (1) COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_usuario`,`persona_id_persona`),
   UNIQUE KEY `unique_email` (`email`),
   UNIQUE KEY `contraseña` (`contraseña`),
@@ -728,7 +736,7 @@ CREATE TABLE `usuario` (
   KEY `fk_usuario_persona1_idx` (`persona_id_persona`),
   CONSTRAINT `fk_usuario_persona1` FOREIGN KEY (`persona_id_persona`) REFERENCES `persona` (`id_persona`),
   CONSTRAINT `usuario_ibfk_1` FOREIGN KEY (`id_perfil`) REFERENCES `perfil` (`id_perfil`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -737,7 +745,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,1,10),(12,'aa@hotmail.com','$2y$12$rGHzdLXpIt5NNkzjEQPsjei2BWYDxT5OwUTMbSSt4Jlipp17o6lAy',NULL,1,13);
+INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,1,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -935,4 +943,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-09  2:15:25
+-- Dump completed on 2026-05-26 17:21:27
