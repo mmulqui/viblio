@@ -80,21 +80,21 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
         $todos_usuarios = isset($_GET["todos_usuarios"]);
         if($todos_usuarios){
             $sql_u = "SELECT 
-                        u.id_usuario, 
-                        u.activo,
-                        p.nombre, 
-                        p.apellido, 
-                        p.fecha_nacimiento,
-                        p.dni,
-                        u.email,
-                        pf.tipo_perfil AS rol,
-                        a.numero_prestamos,
-                        a.numero_multas
-                    FROM persona p
-                    JOIN usuario u ON p.id_persona = u.persona_id_persona
-                    JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                    JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                    WHERE u.activo = 1;";
+                            u.id_usuario, 
+                            u.activo,
+                            p.nombre, 
+                            p.apellido, 
+                            p.fecha_nacimiento,
+                            p.dni,
+                            u.email,
+                            pf.tipo_perfil AS rol,
+                            a.numero_prestamos,
+                            a.numero_multas
+                        FROM persona p
+                        JOIN usuario u ON p.id_persona = u.persona_id_persona
+                        JOIN perfil pf ON u.id_perfil = pf.id_perfil
+                        LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
+                        WHERE u.activo = 1;";
         } else { $sql_u = "SELECT 
                                 u.id_usuario,
                                 u.activo,
@@ -109,7 +109,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                             FROM persona p
                             JOIN usuario u ON p.id_persona = u.persona_id_persona
                             JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                            JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
+                            LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
                             WHERE u.activo = 1
                                         AND (p.nombre LIKE '%$busqueda_usuarios%' OR
                                             p.apellido LIKE '%$busqueda_usuarios%' OR
@@ -144,7 +144,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalAgregarUsuario')">&times;</span>
                     <h2>Agregar Nuevo Usuario</h2>
-                    <form action="procesar_registro.php" method="POST">
+                    <form action="../controlers/procesar_registro.php" method="POST">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Nombre:</label>

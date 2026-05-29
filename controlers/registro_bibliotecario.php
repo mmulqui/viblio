@@ -1,7 +1,7 @@
 <?php
 require_once("../models/conexion.php");
 
-$campos = ["nombre","apellido","fecha_nacimiento","dni","email","contrasenia"];
+$campos = ["nombre","apellido","fecha_nacimiento","dni","email","contrasenia","turno"];
 foreach($campos as $campo){
     if (empty($_POST[$campo])){
         echo"<script>
@@ -37,15 +37,16 @@ if ($checkDni->num_rows > 0){
 $passwordSecurity = password_hash($_POST["contrasenia"], PASSWORD_BCRYPT, ["cost" => 12]);
 //se agrego el hash a la contraseña
 
-$stmt = $conexion->prepare("call registrar_alumno(?,?,?,?,?,?)");
+$stmt = $conexion->prepare("call registrar_bibliotecario(?,?,?,?,?,?,?)");
 $stmt->bind_param(
-    "ssssss",
+    "sssssss",
     $_POST["nombre"],
     $_POST["apellido"],
     $_POST["fecha_nacimiento"],
     $_POST["dni"],
     $_POST["email"],
-    $passwordSecurity
+    $passwordSecurity,
+    $_POST["turno"]
 );
 
 if ($stmt->execute()) {
@@ -54,9 +55,8 @@ if ($stmt->execute()) {
             window.location.href='../views/menu.php';
             </script>";
 } else {
-    error_log("Error al registrar alumno: " . $stmt->error);
+    error_log("Error al registrar usuario: " . $stmt->error);
     echo "<script>
             alert('Error al agregar usuario. Intente nuevamente.');
         </script>";
 }
-

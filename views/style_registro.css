@@ -42,19 +42,19 @@ body{
 
 .btn-volver{
     position: absolute;
-    top: 70px;
-    left: 110px; 
+    top: 30px;
+    left: 20px; 
     width: 20px;
     height: 20px;
-    border-left: 3px solid white;
-    border-bottom: 3px solid white;
+    border-left: 3px solid #10B981;
+    border-bottom: 3px solid #10B981;
     transform: rotate(45deg);
 }
 
 .titulo-registro{
     color: white;
     position: absolute;
-    top: 65px;
+    top: 40px;
     left: 550px;
 }
 
@@ -71,7 +71,7 @@ body{
     height: 90%;
     max-width: 800px;
     margin: 0 auto;
-    margin-top: 150px;
+    margin-top: 60px;
 }
 
 .columnas {

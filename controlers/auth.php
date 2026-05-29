@@ -27,4 +27,13 @@ function verificarSesion(): void {
     $_SESSION["last_activity"] = time();
 }
 
+function verificarRol(array $rolesPermitidos): void {
+    verificarSesion(); // ya valida sesión, ip y timeout
+ 
+    if (!in_array($_SESSION["rol"] ?? '', $rolesPermitidos)) {
+        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Acceso denegado"));
+        exit();
+    }
+}
+
 ?>

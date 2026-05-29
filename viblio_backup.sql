@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `viblio_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `viblio_db`;
 -- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: viblio_db
@@ -41,7 +39,7 @@ CREATE TABLE `alumno` (
 
 LOCK TABLES `alumno` WRITE;
 /*!40000 ALTER TABLE `alumno` DISABLE KEYS */;
-INSERT INTO `alumno` VALUES (7,0,0,9),(16,0,0,18);
+INSERT INTO `alumno` VALUES (16,0,0,18);
 /*!40000 ALTER TABLE `alumno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -113,7 +111,7 @@ CREATE TABLE `bibliotecario` (
   PRIMARY KEY (`id_biblitecario`,`usuario_id_usuario`),
   KEY `fk_bibliotecario_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_bibliotecario_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -122,6 +120,7 @@ CREATE TABLE `bibliotecario` (
 
 LOCK TABLES `bibliotecario` WRITE;
 /*!40000 ALTER TABLE `bibliotecario` DISABLE KEYS */;
+INSERT INTO `bibliotecario` VALUES (1,NULL,9),(2,'Mañana',19);
 /*!40000 ALTER TABLE `bibliotecario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -437,8 +436,9 @@ CREATE TABLE `perfil` (
   `id_perfil` int NOT NULL AUTO_INCREMENT,
   `tipo_perfil` varchar(50) NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
-  PRIMARY KEY (`id_perfil`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id_perfil`),
+  UNIQUE KEY `unique_tipo_perfil` (`tipo_perfil`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -447,7 +447,7 @@ CREATE TABLE `perfil` (
 
 LOCK TABLES `perfil` WRITE;
 /*!40000 ALTER TABLE `perfil` DISABLE KEYS */;
-INSERT INTO `perfil` VALUES (1,'alumno',1),(2,'alumno',1),(3,'alumno',1),(4,'alumno',1),(5,'alumno',1),(6,'alumno',1);
+INSERT INTO `perfil` VALUES (1,'alumno',1),(2,'bibliotecario',1),(3,'profesor',1);
 /*!40000 ALTER TABLE `perfil` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -466,7 +466,7 @@ CREATE TABLE `persona` (
   `dni` varchar(20) NOT NULL,
   PRIMARY KEY (`id_persona`),
   UNIQUE KEY `unique_dni` (`dni`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,7 +475,7 @@ CREATE TABLE `persona` (
 
 LOCK TABLES `persona` WRITE;
 /*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(20,'asdf','asfasd','2029-11-11','434443434');
+INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(20,'asdf','asfasd','2029-11-11','434443434'),(21,'Jonas','Vera','2002-06-12','44224952');
 /*!40000 ALTER TABLE `persona` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -736,7 +736,7 @@ CREATE TABLE `usuario` (
   KEY `fk_usuario_persona1_idx` (`persona_id_persona`),
   CONSTRAINT `fk_usuario_persona1` FOREIGN KEY (`persona_id_persona`) REFERENCES `persona` (`id_persona`),
   CONSTRAINT `usuario_ibfk_1` FOREIGN KEY (`id_perfil`) REFERENCES `perfil` (`id_perfil`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -745,7 +745,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,1,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0);
+INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,2,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0),(19,'jonasalejandrovera123@hotmail.com','$2y$12$pam4oMm145EDrBWcLzSsQeFgNbAMyfIwPmvXhClBYXiVkOzZTQfgW',NULL,2,21,1);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -832,36 +832,87 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `registrar_alumno`(
     IN p_contraseña CHAR(60)
 )
 BEGIN
+    DECLARE v_id_persona INT;
+    DECLARE v_id_perfil INT;
+    DECLARE v_id_usuario INT;
+ 
     START TRANSACTION;
-
+ 
     -- 1) Insertar persona
     INSERT INTO persona(nombre, apellido, fecha_nacimiento, dni)
     VALUES (p_nombre, p_apellido, p_fecha_nacimiento, p_dni);
-
-    SET @id_persona = LAST_INSERT_ID();
-
-    -- 2) Obtener el id_perfil del alumno
-    SELECT id_perfil INTO @id_perfil
+ 
+    SET v_id_persona = LAST_INSERT_ID();
+ 
+    -- 2) Obtener id_perfil del rol 'alumno' (siempre existe)
+    SELECT id_perfil INTO v_id_perfil
     FROM perfil
-    WHERE tipo_perfil = 'alumno'
-    LIMIT 1;
-
-    -- Si no existe el perfil alumno, lo creamos
-    IF @id_perfil IS NULL THEN
-        INSERT INTO perfil(tipo_perfil) VALUES ('alumno');
-        SET @id_perfil = LAST_INSERT_ID();
-    END IF;
-
-    -- 3) Insertar usuario vinculado a persona
+    WHERE tipo_perfil = 'alumno';
+ 
+    -- 3) Insertar usuario
     INSERT INTO usuario(email, contraseña, id_perfil, persona_id_persona)
-    VALUES (p_email, p_contraseña, @id_perfil, @id_persona);
-
-    SET @id_usuario = LAST_INSERT_ID();
-
-    -- 4) Insertar alumno vinculado a usuario
+    VALUES (p_email, p_contraseña, v_id_perfil, v_id_persona);
+ 
+    SET v_id_usuario = LAST_INSERT_ID();
+ 
+    -- 4) Insertar alumno
     INSERT INTO alumno(numero_prestamos, numero_multas, usuario_id_usuario)
-    VALUES (0, 0, @id_usuario);
-
+    VALUES (0, 0, v_id_usuario);
+ 
+    COMMIT;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `registrar_bibliotecario` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `registrar_bibliotecario`(
+    IN p_nombre VARCHAR(50),
+    IN p_apellido VARCHAR(50),
+    IN p_fecha_nacimiento DATE,
+    IN p_dni VARCHAR(20),
+    IN p_email VARCHAR(100),
+    IN p_contraseña CHAR(60),
+    IN p_turno VARCHAR(25)
+)
+BEGIN
+    DECLARE v_id_persona INT;
+    DECLARE v_id_perfil INT;
+    DECLARE v_id_usuario INT;
+ 
+    START TRANSACTION;
+ 
+    -- 1) Insertar persona
+    INSERT INTO persona(nombre, apellido, fecha_nacimiento, dni)
+    VALUES (p_nombre, p_apellido, p_fecha_nacimiento, p_dni);
+ 
+    SET v_id_persona = LAST_INSERT_ID();
+ 
+    -- 2) Obtener id_perfil del rol 'bibliotecario'
+    SELECT id_perfil INTO v_id_perfil
+    FROM perfil
+    WHERE tipo_perfil = 'bibliotecario';
+ 
+    -- 3) Insertar usuario
+    INSERT INTO usuario(email, contraseña, id_perfil, persona_id_persona)
+    VALUES (p_email, p_contraseña, v_id_perfil, v_id_persona);
+ 
+    SET v_id_usuario = LAST_INSERT_ID();
+ 
+    -- 4) Insertar bibliotecario con su turno
+    INSERT INTO bibliotecario(turno, usuario_id_usuario)
+    VALUES (p_turno, v_id_usuario);
+ 
     COMMIT;
 END ;;
 DELIMITER ;
@@ -933,6 +984,59 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `registrar_profesor` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `registrar_profesor`(
+    IN p_nombre VARCHAR(50),
+    IN p_apellido VARCHAR(50),
+    IN p_fecha_nacimiento DATE,
+    IN p_dni VARCHAR(20),
+    IN p_email VARCHAR(100),
+    IN p_contraseña CHAR(60)
+)
+BEGIN
+    DECLARE v_id_persona INT;
+    DECLARE v_id_perfil INT;
+    DECLARE v_id_usuario INT;
+ 
+    START TRANSACTION;
+ 
+    -- 1) Insertar persona
+    INSERT INTO persona(nombre, apellido, fecha_nacimiento, dni)
+    VALUES (p_nombre, p_apellido, p_fecha_nacimiento, p_dni);
+ 
+    SET v_id_persona = LAST_INSERT_ID();
+ 
+    -- 2) Obtener id_perfil del rol 'profesor'
+    SELECT id_perfil INTO v_id_perfil
+    FROM perfil
+    WHERE tipo_perfil = 'profesor';
+ 
+    -- 3) Insertar usuario
+    INSERT INTO usuario(email, contraseña, id_perfil, persona_id_persona)
+    VALUES (p_email, p_contraseña, v_id_perfil, v_id_persona);
+ 
+    SET v_id_usuario = LAST_INSERT_ID();
+ 
+    -- 4) Insertar profesor
+    INSERT INTO profesor(numero_prestamos, usuario_id_usuario)
+    VALUES (0, v_id_usuario);
+ 
+    COMMIT;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -943,4 +1047,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-26 17:21:27
+-- Dump completed on 2026-05-27 23:49:44

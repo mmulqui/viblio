@@ -14,12 +14,12 @@
             <a href="index.php" class="btn-volver"></a>
 
             <h2 class="titulo-registro">Registro</h2>
-
+            <!--
             <p class="subtitulo">
                 Date de alta rellenando los siguientes datos.
             </p>
-
-            <form action="../controlers/procesar_registro.php" method="post" class="form-registro">
+            -->
+            <form action="../controlers/registro_bibliotecario.php" method="post" class="form-registro">
 
                 <div class="columnas">
 
@@ -30,13 +30,16 @@
                         <label>Apellido</label>
                         <input type="text" name="apellido" required>
 
+                        <label>DNI</label>
+                        <input type="number" name="dni" required>
+
                         <label>Fecha de nacimiento</label>
                         <input type="date" name="fecha_nacimiento" required>
                     </div>
 
                     <div class="columna">
-                        <label>DNI</label>
-                        <input type="number" name="dni" required>
+                        <label>Turno</label>
+                        <input type="text" name="turno" required>
 
                         <label>E-mail</label>
                         <input type="email" name="email" required>
