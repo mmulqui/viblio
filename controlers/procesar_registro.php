@@ -12,6 +12,19 @@ foreach($campos as $campo){
     }
 }
 
+$fechaNacimiento = $_POST["fecha_nacimiento"];
+$hoy = new DateTime();
+$fecha = Datetime::createfromformat("d-m-Y", $fechaNacimiento);
+
+if (!$fecha || $fecha > $hoy){
+    echo "<script>
+            alert('La fecha de nacimiento  no puede ser una fecha futura.');
+          </script>"
+    exit;
+}
+
+$fechaParaDB = $fecha->format('Y-m-d');
+
 $objeto = new conexion;
 $conexion = $objeto->conectar();
 
@@ -32,17 +45,18 @@ if ($checkDni->num_rows > 0){
             alert('Los datos ya han sido registrados. Use otros.');
             window.history.back();
         </script>";
+    exit;
 }
 
 $passwordSecurity = password_hash($_POST["contrasenia"], PASSWORD_BCRYPT, ["cost" => 12]);
-//se agrego el hash a la contraseña
+
 
 $stmt = $conexion->prepare("call registrar_alumno(?,?,?,?,?,?)");
 $stmt->bind_param(
     "ssssss",
     $_POST["nombre"],
     $_POST["apellido"],
-    $_POST["fecha_nacimiento"],
+    $fechaParaDB,
     $_POST["dni"],
     $_POST["email"],
     $passwordSecurity
