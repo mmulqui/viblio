@@ -93,11 +93,12 @@ body{
     font-size: 16px;
 }
 
+/* CORREGIDO: era .form_registro (guión bajo) — ahora unificado en un solo selector */
 .form-registro input[type="text"],
 .form-registro input[type="email"],
 .form-registro input[type="password"],
 .form-registro input[type="date"],
-.form_registro input[type="number"] {
+.form-registro input[type="number"] {
     width: 100%;
     background: transparent;
     border: none;
@@ -107,6 +108,14 @@ body{
     font-size: 16px;
     outline: none;
     margin-bottom: 20px;
+    /* Quitar spinner nativo del input number */
+    -moz-appearance: textfield;
+}
+
+.form-registro input[type="number"]::-webkit-outer-spin-button,
+.form-registro input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .form-registro input::placeholder {
@@ -115,13 +124,6 @@ body{
 
 .form-registro input:focus {
     border-bottom: 2px solid white;
-}
-
-.form-registro label {
-    color: white;
-    display: block;
-    margin-bottom: 6px;
-    font-size: 16px;
 }
 
 .btn-registrarse{

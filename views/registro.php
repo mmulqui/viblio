@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style_registro.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="registro_container">
@@ -14,38 +15,35 @@
             <a href="index.php" class="btn-volver"></a>
 
             <h2 class="titulo-registro">Registro</h2>
-            <!--
-            <p class="subtitulo">
-                Date de alta rellenando los siguientes datos.
-            </p>
-            -->
-            <form action="../controlers/registro_bibliotecario.php" method="post" class="form-registro">
+
+            <form action="../controlers/procesar_registro.php" method="post" class="form-registro" id="form-registro" novalidate>
 
                 <div class="columnas">
 
                     <div class="columna">
                         <label>Nombre</label>
-                        <input type="text" name="nombre" required>
+                        <input type="text" name="nombre" id="nombre">
 
                         <label>Apellido</label>
-                        <input type="text" name="apellido" required>
+                        <input type="text" name="apellido" id="apellido">
 
                         <label>DNI</label>
-                        <input type="number" name="dni" required>
+                        <input type="number" name="dni" id="dni">
 
                         <label>Fecha de nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" required>
+                        <input type="date" name="fecha_nacimiento" id="fecha_nacimiento">
                     </div>
 
                     <div class="columna">
-                        <label>Turno</label>
-                        <input type="text" name="turno" required>
 
                         <label>E-mail</label>
-                        <input type="email" name="email" required>
+                        <input type="email" name="email" id="email">
 
                         <label>Contraseña</label>
-                        <input type="password" name="contrasenia" required>
+                        <input type="password" name="contrasenia" id="contrasenia">
+
+                        <label>Confirmar Contraseña</label>
+                        <input type="password" name="confirmar_contrasenia" id="confirmar_contrasenia">
                     </div>
 
                 </div>
@@ -57,5 +55,9 @@
         </div>
 
     </div>
+
+    <script src="script_alertas.js"></script>
+    <script src="script_registro.js"></script>
+    
 </body>
 </html>

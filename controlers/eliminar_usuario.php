@@ -1,9 +1,11 @@
 <?php
+require_once("../controlers/auth.php");
+verificarRol(["bibliotecario"]);
 require_once("../models/conexion.php");
 
 $objeto = new conexion();
 $conexion = $objeto->conectar();
-$dni = $_GET["dni"];
+$dni = mysqli_real_escape_string($conexion, $_GET["dni"]);
 $resultado = $conexion->query("select id_persona from persona where dni ='$dni';");
 
 if ($resultado && $resultado->num_rows > 0) {
@@ -20,16 +22,14 @@ if ($resultado && $resultado->num_rows > 0) {
         $conexion->query("UPDATE usuario SET activo = 0 WHERE id_usuario = '$id_usuario'");
     }
 
-    echo "<script>
-            alert('Usuario eliminado exitosamente');
-            window.location.href='../views/menu.php?tab=usuario';
-        </script>";
+    $objeto->desconectar($conexion);
+    $_SESSION['alerta'] = ['tipo' => 'success', 'titulo' => '¡Éxito!', 'msg' => 'Usuario eliminado correctamente.'];
+    header("Location: ../views/menu.php");
+    exit;
 } else {
-    echo "<script>
-            alert('No se encontró una persona con ese DNI');
-            window.location.href='../views/menu.php?tab=usuario';
-        </script>";
+   $objeto->desconectar($conexion);
+    $_SESSION['alerta'] = ['tipo' => 'warning', 'titulo' => 'Ups', 'msg' => 'No se encontró una persona con ese DNI.'];
+    header("Location: ../views/menu.php");
+    exit;
 }
-
-$objeto->desconectar($conexion);
 ?>

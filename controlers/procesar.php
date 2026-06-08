@@ -11,9 +11,9 @@ ini_set('session.gc_maxlifetime', 7200); // 2 horas
 if (isset($_SESSION["id_usuario"])) {
     // Si ya está logueado, redirigir según su rol
     if (($_SESSION["rol"] ?? "") === "bibliotecario") {
-        header("Location: /login_viblio/view_bibliotecario/views/menu.php");
+        header("Location: ../views/menu.php");
     } else {
-        header("Location: /login_viblio/view_bibliotecario/views/menu_usuario.php");
+        header("Location: ../views/menu_usuario.php");
     }
     exit();
 }
@@ -67,9 +67,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $objeto->desconectar($conexion);
             
             if ($tipoPerfil === "bibliotecario") {
-                header("Location: /login_viblio/view_bibliotecario/views/menu.php");
+                header("Location: ../views/menu.php");
             } else {
-                header("Location: /login_viblio/view_bibliotecario/views/menu_usuario.php");
+                header("Location: ../views/menu_usuario.php");
             }
 
             exit();

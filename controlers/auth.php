@@ -6,13 +6,13 @@ function verificarSesion(): void {
     }
 
     if (empty($_SESSION["id_usuario"])) {
-        header("Location: /login_viblio/view_bibliotecario/views/index.php");
+        header("Location: ../views/index.php");
         exit();
     }
 
     if (time() - ($_SESSION["last_activity"] ?? 0) > 1800) {
         session_destroy();
-        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Sesión expirada por inactividad"));
+        header("Location: ../views/index.php?error=" . urlencode("Sesión expirada por inactividad"));
         exit();
     }
 
@@ -20,7 +20,7 @@ function verificarSesion(): void {
     if ($_SESSION["ip"] !== $_SERVER["REMOTE_ADDR"] ||
         $_SESSION["ua"] !== $_SERVER["HTTP_USER_AGENT"]) {
         session_destroy();
-        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Sesión inválida"));
+        header("Location: ../views/index.php?error=" . urlencode("Sesión inválida"));
         exit();
     }
 
@@ -31,7 +31,7 @@ function verificarRol(array $rolesPermitidos): void {
     verificarSesion(); // ya valida sesión, ip y timeout
  
     if (!in_array($_SESSION["rol"] ?? '', $rolesPermitidos)) {
-        header("Location: /login_viblio/view_bibliotecario/views/index.php?error=" . urlencode("Acceso denegado"));
+        header("Location: ../views/index.php?error=" . urlencode("Acceso denegado"));
         exit();
     }
 }
