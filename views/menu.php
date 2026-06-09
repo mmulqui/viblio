@@ -387,7 +387,6 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                 </button>
             </div>
         
-            <!-- Modal agregar perfil -->
             <div id="modalAgregarPerfil" class="modal">
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalAgregarPerfil')">&times;</span>
@@ -410,7 +409,6 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                 </div>
             </div>
         
-            <!-- Modal modificar perfil -->
             <div id="modalModificarPerfil" class="modal">
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalModificarPerfil')">&times;</span>

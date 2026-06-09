@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,8 @@
             <h2 class="titulo-registro">Registro</h2>
 
             <form action="../controlers/procesar_registro.php" method="post" class="form-registro" id="form-registro" novalidate>
+
+                <input type="hidden" name="registro_publico" value="1">
 
                 <div class="columnas">
 
@@ -58,6 +60,24 @@
 
     <script src="script_alertas.js"></script>
     <script src="script_registro.js"></script>
-    
+
+    <script>
+        // Alerta para cuando el registro quedó pendiente de verificación por email
+        (function () {
+            const params  = new URLSearchParams(window.location.search);
+            const mensaje = params.get('pendiente');
+            if (mensaje) {
+                Swal.fire({
+                    icon: 'info',
+                    title: '¡Revisá tu email!',
+                    text: mensaje,
+                    confirmButtonColor: '#10B981',
+                    confirmButtonText: 'Entendido',
+                    allowOutsideClick: false
+                });
+            }
+        })();
+    </script>
+
 </body>
 </html>

@@ -32,7 +32,7 @@ CREATE TABLE `alumno` (
   PRIMARY KEY (`id_alumno`,`usuario_id_usuario`),
   KEY `fk_alumno_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_alumno_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `alumno` (
 
 LOCK TABLES `alumno` WRITE;
 /*!40000 ALTER TABLE `alumno` DISABLE KEYS */;
-INSERT INTO `alumno` VALUES (16,0,0,18),(17,0,0,20);
+INSERT INTO `alumno` VALUES (16,0,0,18),(17,0,0,20),(18,0,0,24);
 /*!40000 ALTER TABLE `alumno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -494,7 +494,7 @@ CREATE TABLE `persona` (
   `dni` varchar(20) NOT NULL,
   PRIMARY KEY (`id_persona`),
   UNIQUE KEY `unique_dni` (`dni`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -503,7 +503,7 @@ CREATE TABLE `persona` (
 
 LOCK TABLES `persona` WRITE;
 /*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(20,'asdf','asfasd','2029-11-11','434443434'),(21,'Jonas','Vera','2002-07-12','44224952'),(22,'Salma','Sanchez','2002-10-02','44256056'),(23,'Denis','Gomez','2000-08-09','33333333'),(24,'Rodrigo','Gaona','2002-08-31','22222222'),(25,'Maria','Valdez','1971-09-21','11111111');
+INSERT INTO `persona` VALUES (10,'Miguel','Mulqui','2003-10-11','44344934'),(20,'asdf','asfasd','2029-11-11','434443434'),(21,'Jonas','Vera','2002-07-12','44224952'),(22,'Salma','Sanchez','2002-10-02','44256056'),(23,'Denis','Gomez','2000-08-09','33333333'),(24,'Rodrigo','Gaona','2002-08-31','22222222'),(25,'Maria','Valdez','1971-09-21','11111111'),(26,'Daiara','Mulqui','1997-12-02','40626704');
 /*!40000 ALTER TABLE `persona` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -563,6 +563,38 @@ CREATE TABLE `profesor` (
 LOCK TABLES `profesor` WRITE;
 /*!40000 ALTER TABLE `profesor` DISABLE KEYS */;
 /*!40000 ALTER TABLE `profesor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `registros_pendientes`
+--
+
+DROP TABLE IF EXISTS `registros_pendientes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `registros_pendientes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `apellido` varchar(100) NOT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `dni` varchar(20) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `expira_en` datetime NOT NULL,
+  `creado_en` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `registros_pendientes`
+--
+
+LOCK TABLES `registros_pendientes` WRITE;
+/*!40000 ALTER TABLE `registros_pendientes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `registros_pendientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -764,7 +796,7 @@ CREATE TABLE `usuario` (
   KEY `fk_usuario_persona1_idx` (`persona_id_persona`),
   CONSTRAINT `fk_usuario_persona1` FOREIGN KEY (`persona_id_persona`) REFERENCES `persona` (`id_persona`),
   CONSTRAINT `usuario_ibfk_1` FOREIGN KEY (`id_perfil`) REFERENCES `perfil` (`id_perfil`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -773,7 +805,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,2,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0),(19,'jonasalejandrovera123@hotmail.com','$2y$12$pam4oMm145EDrBWcLzSsQeFgNbAMyfIwPmvXhClBYXiVkOzZTQfgW',NULL,3,21,1),(20,'salmasanchez@hotmail.com','$2y$12$rUOtKp2uzSXSJsnex5osWOzN9ijmKj0V2svUGkvgGMT0elH6Qokqu',NULL,1,22,1),(21,'denisgomez@hotmail.com','$2y$12$hHZQfwT3nWpbPrE8zFfAd.7WG2AY.l39.Tm4JzzicQL6S2z1g7nW.',NULL,3,23,1),(22,'rodrigogaona@hotmail.com','$2y$12$pvc0MIqVkw.oc5viAMpE7.wzmdtpubBfDwXu7c.87CSzntv78vFTi',NULL,1,24,0),(23,'mariavaldez@gmail.com','$2y$12$RphA3KsBXO4fp1diArKAuOQ2XW1.zox7DDwQuWYBkVQCuZMXKavIa',NULL,2,25,0);
+INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,2,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0),(19,'jonasalejandrovera123@hotmail.com','$2y$12$pam4oMm145EDrBWcLzSsQeFgNbAMyfIwPmvXhClBYXiVkOzZTQfgW',NULL,3,21,1),(20,'salmasanchez@hotmail.com','$2y$12$rUOtKp2uzSXSJsnex5osWOzN9ijmKj0V2svUGkvgGMT0elH6Qokqu',NULL,1,22,1),(21,'denisgomez@hotmail.com','$2y$12$hHZQfwT3nWpbPrE8zFfAd.7WG2AY.l39.Tm4JzzicQL6S2z1g7nW.',NULL,3,23,1),(22,'rodrigogaona@hotmail.com','$2y$12$pvc0MIqVkw.oc5viAMpE7.wzmdtpubBfDwXu7c.87CSzntv78vFTi',NULL,1,24,0),(23,'mariavaldez@gmail.com','$2y$12$RphA3KsBXO4fp1diArKAuOQ2XW1.zox7DDwQuWYBkVQCuZMXKavIa',NULL,2,25,0),(24,'mulquidaiara@gmail.com','$2y$12$HqmU1rJjP2Xt3PFiC49X6e9A8Ve1NwFpeA40IybdTwR4qLRUYUzlC',NULL,1,26,1);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -820,7 +852,7 @@ CREATE TABLE `usuario_modulos` (
 
 LOCK TABLES `usuario_modulos` WRITE;
 /*!40000 ALTER TABLE `usuario_modulos` DISABLE KEYS */;
-INSERT INTO `usuario_modulos` VALUES (9,1,1),(9,2,1),(9,3,1),(18,1,1),(18,2,1),(18,3,1),(19,1,1),(19,2,1),(19,3,1),(20,1,1),(20,2,1),(20,3,1),(21,1,1),(21,2,1),(21,3,1),(22,1,1),(22,2,1),(22,3,1),(23,1,1),(23,2,1),(23,3,1);
+INSERT INTO `usuario_modulos` VALUES (9,1,1),(9,2,1),(9,3,1),(18,1,1),(18,2,1),(18,3,1),(19,1,1),(19,2,1),(19,3,1),(20,1,1),(20,2,1),(20,3,1),(21,1,1),(21,2,1),(21,3,1),(22,1,1),(22,2,1),(22,3,1),(23,1,1),(23,2,1),(23,3,1),(24,1,1),(24,2,1),(24,3,1);
 /*!40000 ALTER TABLE `usuario_modulos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1122,4 +1154,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-08 13:17:48
+-- Dump completed on 2026-06-09 17:30:39
