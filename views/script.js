@@ -223,3 +223,64 @@ function eliminarPerfil(id, nombre) {
         }
     );
 }
+
+// Perfil
+let idPerfilActual = null;
+
+function gestionarModulosPerfil(id_perfil, nombre_perfil) {
+    idPerfilActual = id_perfil;
+    document.getElementById('nombre_perfil_mod').textContent = nombre_perfil;
+    document.getElementById('lista_modulos_perfil').innerHTML = '<p>Cargando...</p>';
+    abrirModal('modalModulosPerfil');
+
+    fetch('../controlers/obtener_modulos_perfil.php?id_perfil=' + id_perfil)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                document.getElementById('lista_modulos_perfil').innerHTML = '<p style="color:red">Error al cargar módulos.</p>';
+                return;
+            }
+            const lista = document.getElementById('lista_modulos_perfil');
+            lista.innerHTML = '';
+            data.modulos.forEach(m => {
+                const div = document.createElement('div');
+                div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #e0e0e0;';
+                div.innerHTML = `
+                    <span style="font-weight:500;">${m.nombre}</span>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type="checkbox" value="${m.id_modulo}" ${m.activo == 1 ? 'checked' : ''}
+                            style="width:18px;height:18px;accent-color:#10B981;cursor:pointer;">
+                        <span style="font-size:13px;color:#555;">${m.activo == 1 ? 'Activo' : 'Inactivo'}</span>
+                    </label>`;
+                // Actualizar el texto al cambiar el checkbox
+                div.querySelector('input').addEventListener('change', function() {
+                    div.querySelector('span:last-child').textContent = this.checked ? 'Activo' : 'Inactivo';
+                });
+                lista.appendChild(div);
+            });
+        })
+        .catch(() => {
+            document.getElementById('lista_modulos_perfil').innerHTML = '<p style="color:red">Error de conexión.</p>';
+        });
+}
+
+function guardarModulosPerfil() {
+    const checks  = document.querySelectorAll('#lista_modulos_perfil input[type=checkbox]');
+    const activos = Array.from(checks).filter(c => c.checked).map(c => c.value);
+
+    const fd = new FormData();
+    fd.append('id_perfil', idPerfilActual);
+    activos.forEach(id => fd.append('modulos[]', id));
+
+    fetch('../controlers/guardar_modulos_perfil.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            cerrarModal('modalModulosPerfil');
+            if (data.success) {
+                mdAlert('success', '¡Éxito!', data.message);
+            } else {
+                mdAlert('error', 'Error', data.message);
+            }
+        })
+        .catch(() => mdAlert('error', 'Error', 'No se pudo conectar con el servidor.'));
+}

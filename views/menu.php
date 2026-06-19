@@ -7,6 +7,9 @@ require_once("../controlers/user_sesion.php");
 $objeto    = new conexion();
 $conexion  = $objeto->conectar();
 $id_usuario_logueado = (int) $_SESSION["id_usuario"];
+
+// Cargar perfiles activos UNA sola vez para reutilizar en todo el menu
+$perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfil ORDER BY id_perfil", $conexion);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -445,10 +448,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfil ORDER BY id_perfil", $conexion);
-                            foreach ($perfiles as $p):
-                            ?>
+                            <?php foreach ($perfiles as $p): ?>
                             <tr class="fila-libro">
                                 <td><?= $p['id_perfil'] ?></td>
                                 <td><?= htmlspecialchars($p['tipo_perfil']) ?></td>
@@ -469,6 +469,11 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                                             onclick="eliminarPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
                                             title="Eliminar (baja lógica)">
                                         <ion-icon name="trash-outline"></ion-icon>
+                                    </button>
+                                    <button class="btn-accion" style="background:#10B981;color:white;"
+                                            onclick="gestionarModulosPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Gestionar módulos del perfil">
+                                        <ion-icon name="apps-outline"></ion-icon>
                                     </button>
                                 </td>
                             </tr>
@@ -516,9 +521,13 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
                     <div class="form-group">
                         <label>Rol:</label>
                         <select id="mod_u_rol" name="rol" required>
-                            <option value="alumno">Alumno</option>
-                            <option value="profesor">Profesor</option>
-                            <option value="bibliotecario">Bibliotecario</option>
+                            <?php foreach ($perfiles as $p): ?>
+                                <?php if ($p['activo']): ?>
+                                <option value="<?= htmlspecialchars($p['tipo_perfil']) ?>">
+                                    <?= htmlspecialchars(ucfirst($p['tipo_perfil'])) ?>
+                                </option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
                         </select>
                     </div>
 
@@ -596,14 +605,30 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
             </form>
         </div>
     </div>
+    <!-- Modal módulos por USUARIO (existente) -->
     <div id="modalModulos" class="modal">
         <div class="modal-contenido">
-            <span class="cerrar" onclick="cerrarModal('modalModulos')">&times;</span>
+            <span class="cerrar" onclick="cerrarModal('modalModulos')"></span>
             <h2>Módulos de <span id="nombre_usuario_mod"></span></h2>
             <div id="lista_modulos" style="display:flex;flex-direction:column;gap:15px;margin:20px 0;"></div>
             <div class="form-buttons">
                 <button class="btn-guardar" onclick="guardarModulos()">Guardar</button>
                 <button class="btn-cancelar" onclick="cerrarModal('modalModulos')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!-- NUEVO: Modal módulos por PERFIL -->
+    <div id="modalModulosPerfil" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal('modalModulosPerfil')">&times;</span>
+            <h2>Módulos del perfil: <span id="nombre_perfil_mod"></span></h2>
+            <p style="color:#666;font-size:13px;margin-bottom:8px;">
+                Configurá qué secciones pueden ver los usuarios con este perfil.
+            </p>
+            <div id="lista_modulos_perfil" style="display:flex;flex-direction:column;gap:15px;margin:20px 0;"></div>
+            <div class="form-buttons">
+                <button class="btn-guardar" onclick="guardarModulosPerfil()">Guardar</button>
+                <button class="btn-cancelar" onclick="cerrarModal('modalModulosPerfil')">Cancelar</button>
             </div>
         </div>
     </div>
@@ -614,6 +639,7 @@ $id_usuario_logueado = (int) $_SESSION["id_usuario"];
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
     <script src="script_alertas.js"></script>
+
     <?php if (isset($_SESSION['alerta'])): 
         $a = $_SESSION['alerta'];
         unset($_SESSION['alerta']);

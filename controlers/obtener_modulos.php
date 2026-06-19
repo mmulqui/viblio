@@ -5,20 +5,20 @@ require_once("../models/conexion.php");
 
 header('Content-Type: application/json');
 
-if (isset($_GET['id_usuario'])) {
-    $id_usuario = (int)$_GET['id_usuario'];
+if (isset($_GET['id_perfil'])) {
+    $id_perfil = (int)$_GET['id_perfil'];
 
     $objeto   = new conexion();
     $conexion = $objeto->conectar();
 
-    $sql = "SELECT mc.id_modulo, mc.nombre, mc.clave, um.activo
+    $sql = "SELECT mc.id_modulo, mc.nombre, mc.clave, pm.activo
             FROM modulos_config mc
-            JOIN usuario_modulos um ON mc.id_modulo = um.id_modulo
-            WHERE um.id_usuario = ?
+            JOIN perfil_modulos pm ON mc.id_modulo = pm.id_modulo
+            WHERE pm.id_perfil = ?
             ORDER BY mc.id_modulo";
 
     $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("i", $id_usuario);
+    $stmt->bind_param("i", $id_perfil);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -27,10 +27,11 @@ if (isset($_GET['id_usuario'])) {
         $modulos[] = $fila;
     }
 
+    $stmt->close();
     $objeto->desconectar($conexion);
 
     echo json_encode(['success' => true, 'modulos' => $modulos]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'id_usuario no proporcionado']);
+    echo json_encode(['success' => false, 'message' => 'id_perfil no proporcionado']);
 }
 ?>
