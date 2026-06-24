@@ -42,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insert->bind_param("iss", $id_usuario, $token, $expires);
         $insert->execute();
 
-        // ✅ Enviar email con PHPMailer
         $resetLink = "http://localhost/login_viblio/view_bibliotecario/views/reset_password.php?token=$token";
 
         $mail = new PHPMailer(true);

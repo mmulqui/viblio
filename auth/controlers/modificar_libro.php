@@ -1,5 +1,5 @@
 <?php
-require_once("conexion.php");
+require_once("../models/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
@@ -19,21 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if ($conexion->query($sql)) {
         $objeto->desconectar($conexion);
-        echo "<script>
-                alert('Libro modificado exitosamente');
-                window.location.href='menu.php?tab=libros';
-              </script>";
+        $_SESSION['alerta'] = ['tipo' => 'success', 'titulo' => '¡Éxito!', 'msg' => 'Libro modificado correctamente.'];
+        header("Location: ../views/menu.php");
+        exit;
     } else {
         $error = $conexion->error;
         $objeto->desconectar($conexion);
-        echo "<script>
-                alert('Error al modificar libro: " . addslashes($error) . "');
-                window.history.back();
-              </script>";
+        $_SESSION['alerta'] = ['tipo' => 'error', 'titulo' => 'Error', 'msg' => 'No se pudo modificar el libro: ' . $error];
+        header("Location: ../views/menu.php");
+        exit;
     }
     
 } else {
-    header("Location: menu.php");
+    header("Location: ../views/menu.php");
     exit;
 }
 ?>

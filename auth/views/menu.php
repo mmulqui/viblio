@@ -1,3 +1,16 @@
+<?php
+require_once("../controlers/auth.php");
+verificarRol(['bibliotecario']);
+require_once("../models/conexion.php");
+require_once("../controlers/user_sesion.php");
+
+$objeto    = new conexion();
+$conexion  = $objeto->conectar();
+$id_usuario_logueado = (int) $_SESSION["id_usuario"];
+
+// Cargar perfiles activos UNA sola vez para reutilizar en todo el menu
+$perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfil ORDER BY id_perfil", $conexion);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +21,6 @@
 </head>
 <body>
     <?php
-        require_once("../models/conexion.php");
-        $objeto = new conexion();
-        $conexion = $objeto->conectar();
         $busqueda = $_GET["busqueda"] ?? "";
         $mostrartodos = isset($_GET["todos"]);
         if($mostrartodos){
@@ -61,21 +71,24 @@
         $todos_usuarios = isset($_GET["todos_usuarios"]);
         if($todos_usuarios){
             $sql_u = "SELECT 
-                        u.id_usuario, 
-                        p.nombre, 
-                        p.apellido, 
-                        p.fecha_nacimiento,
-                        p.dni,
-                        u.email,
-                        pf.tipo_perfil AS rol,
-                        a.numero_prestamos,
-                        a.numero_multas
-                    FROM persona p
-                    JOIN usuario u ON p.id_persona = u.persona_id_persona
-                    JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                    JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                    WHERE pf.tipo_perfil = 'alumno';";
+                            u.id_usuario, 
+                            u.activo,
+                            p.nombre, 
+                            p.apellido, 
+                            p.fecha_nacimiento,
+                            p.dni,
+                            u.email,
+                            pf.tipo_perfil AS rol,
+                            a.numero_prestamos,
+                            a.numero_multas
+                        FROM persona p
+                        JOIN usuario u ON p.id_persona = u.persona_id_persona
+                        JOIN perfil pf ON u.id_perfil = pf.id_perfil
+                        LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
+                        WHERE u.activo = 1;";
         } else { $sql_u = "SELECT 
+                                u.id_usuario,
+                                u.activo,
                                 p.dni,
                                 p.nombre,
                                 p.apellido,
@@ -87,8 +100,8 @@
                             FROM persona p
                             JOIN usuario u ON p.id_persona = u.persona_id_persona
                             JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                            JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                            WHERE pf.tipo_perfil = 'alumno'
+                            LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
+                            WHERE u.activo = 1
                                         AND (p.nombre LIKE '%$busqueda_usuarios%' OR
                                             p.apellido LIKE '%$busqueda_usuarios%' OR
                                             p.dni LIKE '%$busqueda_usuarios%' OR
@@ -106,6 +119,8 @@
                 <li><a onclick="showtab('prestamos')"><ion-icon name="pricetag-outline"></ion-icon>Prestamos</a></li>
                 <li><a onclick="showtab('reservas')"><ion-icon name="bookmark-outline"></ion-icon>Reservas</a></li>
                 <li><a onclick="showtab('multas')"><ion-icon name="warning-outline"></ion-icon>Multas</a></li>
+                <li><a onclick="showtab('perfiles')"><ion-icon name="shield-outline"></ion-icon>Perfiles</a></li>
+                <li><a href="#" onclick="mdConfirm('¿Cerrar sesión?', function(){ window.location.href='logout.php'; })"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
             </ul>
         </div>
     </div>
@@ -121,7 +136,7 @@
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalAgregarUsuario')">&times;</span>
                     <h2>Agregar Nuevo Usuario</h2>
-                    <form action="procesar_registro.php" method="POST">
+                    <form action="../controlers/procesar_registro.php" method="POST">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Nombre:</label>
@@ -151,6 +166,11 @@
                             <div class="form-group">
                                 <label>Contraseña:</label>
                                 <input type="password" name="contrasenia" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Confirmar Contraseña:</label>
+                                <input type="password" name="confirmar_contrasenia" required>
                             </div>
                             
                         </div>
@@ -202,11 +222,19 @@
                                 <td><?Php echo $fila ["numero_prestamos"]?></td>
                                 <td><?Php echo $fila ["numero_multas"]?></td>
                                 <td class="acciones">
+                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuario"])):?>
                                     <button class="btn-modificar" onclick="modificarUsuario('<?php echo $fila['dni']?>')" title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
                                     <button class="btn-eliminar" onclick="eliminarUsuario('<?php echo $fila['dni']?>')" title="Eliminar">
                                         <ion-icon name="trash-outline"></ion-icon> 
+                                    </button>
+                                    <?php else: ?>
+                                        <span title="No podes editar tu propio usuario">-</span>
+                                    <?php endif; ?>
+                                    <button class="btn-accion" style="background:#10B981;color:white;" 
+                                            onclick="gestionarModulos(<?= $fila['id_usuario'] ?>, '<?= htmlspecialchars($fila['nombre']) ?>')">
+                                        <ion-icon name="apps-outline"></ion-icon>
                                     </button>
                                 </td>
                             </tr>
@@ -284,7 +312,7 @@
                 </button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?php= $busqueda ?>">
+                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?= htmlspecialchars($busqueda) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
                     </form>
@@ -354,18 +382,120 @@
                 <h2>Gestion de Multas</h2>
             </div>
         </div>
+        <div id="perfiles" class="tab_content">
+            <div class="encabezado">
+                <h2>Gestión de Perfiles</h2>
+                <button onclick="abrirModal('modalAgregarPerfil')" class="btn-agregar">
+                    <ion-icon name="add-circle-outline"></ion-icon> Agregar Perfil
+                </button>
+            </div>
+        
+            <div id="modalAgregarPerfil" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalAgregarPerfil')">&times;</span>
+                    <h2>Agregar Nuevo Perfil</h2>
+                    <form action="../controlers/procesar_perfil.php" method="POST">
+                        <input type="hidden" name="accion" value="agregar">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Nombre del perfil / rol:</label>
+                                <input type="text" name="tipo_perfil" placeholder="Ej: docente, admin..." required
+                                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                    title="Solo letras y espacios">
+                            </div>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Guardar</button>
+                            <button type="button" onclick="cerrarModal('modalAgregarPerfil')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        
+            <div id="modalModificarPerfil" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalModificarPerfil')">&times;</span>
+                    <h2 style="border-bottom-color:#2196F3;color:#2196F3;">Modificar Perfil</h2>
+                    <form action="../controlers/procesar_perfil.php" method="POST">
+                        <input type="hidden" name="accion" value="modificar">
+                        <input type="hidden" id="mod_perfil_id" name="id_perfil">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Nombre del perfil / rol:</label>
+                                <input type="text" id="mod_perfil_nombre" name="tipo_perfil" required
+                                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                    title="Solo letras y espacios">
+                            </div>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Guardar Cambios</button>
+                            <button type="button" onclick="cerrarModal('modalModificarPerfil')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        
+            <div class="content">
+                <h3>Perfiles / Roles</h3>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre del perfil</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($perfiles as $p): ?>
+                            <tr class="fila-libro">
+                                <td><?= $p['id_perfil'] ?></td>
+                                <td><?= htmlspecialchars($p['tipo_perfil']) ?></td>
+                                <td>
+                                    <?php if ($p['activo']): ?>
+                                        <span class="badge badge-disponible">Activo</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-no-disponible">Inactivo</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="acciones">
+                                    <button class="btn-accion btn-editar"
+                                            onclick="modificarPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Modificar">
+                                        <ion-icon name="create-outline"></ion-icon>
+                                    </button>
+                                    <button class="btn-accion btn-eliminar"
+                                            onclick="eliminarPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Eliminar (baja lógica)">
+                                        <ion-icon name="trash-outline"></ion-icon>
+                                    </button>
+                                    <button class="btn-accion" style="background:#10B981;color:white;"
+                                            onclick="gestionarModulosPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Gestionar módulos del perfil">
+                                        <ion-icon name="apps-outline"></ion-icon>
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
     <div id="modalModificarUsuario" class="modal">
         <div class="modal-contenido">
             <span class="cerrar" onclick="cerrarModal('modalModificarUsuario')">&times;</span>
             <h2>Modificar Usuario</h2>
-            <form id="formModificarUsuario" action="modificar_usuario.php" method="POST">
+            <form id="formModificarUsuario" action="../controlers/modificar_usuario.php" method="POST">
                 <input type="hidden" id="mod_u_id_usuario" name="id_usuario">
                 
                 <div class="form-grid">
                     <div class="form-group">
                         <label>DNI:</label>
-                        <input type="text" id="mod_u_dni" name="dni" readonly required>
+                        <input type="text" id="mod_u_dni" name="dni" required>
                     </div>
 
                     <div class="form-group">
@@ -389,9 +519,28 @@
                     </div>
                     
                     <div class="form-group">
+                        <label>Rol:</label>
+                        <select id="mod_u_rol" name="rol" required>
+                            <?php foreach ($perfiles as $p): ?>
+                                <?php if ($p['activo']): ?>
+                                <option value="<?= htmlspecialchars($p['tipo_perfil']) ?>">
+                                    <?= htmlspecialchars(ucfirst($p['tipo_perfil'])) ?>
+                                </option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label>Nueva Contraseña:</label>
                         <input type="password" id="mod_u_contrasenia" name="contrasenia" placeholder="Dejar vacío para no cambiar">
                         <small style="color: #888; font-size: 11px;">Solo completa si deseas cambiar la contraseña</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirmar Nueva Contraseña:</label>
+                        <input type="password" id="mod_u_confirmar" name="confirmar_contrasenia">
+                        <small style="color: #888; font-size: 11px;">Solo si vas a cambiar la contraseña</small>
                     </div>
                 </div>
             
@@ -406,7 +555,7 @@
         <div class="modal-contenido">
             <span class="cerrar" onclick="cerrarModal('modalmodificarLibro')">&times;</span>
             <h2>Modificar Libro</h2>
-            <form id="ModificarLibro" action="modificar_libro.php" method="POST">
+            <form id="ModificarLibro" action="../controlers/modificar_libro.php" method="POST">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>ISBN:</label>
@@ -456,12 +605,48 @@
             </form>
         </div>
     </div>
+    <!-- Modal módulos por USUARIO (existente) -->
+    <div id="modalModulos" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal('modalModulos')"></span>
+            <h2>Módulos de <span id="nombre_usuario_mod"></span></h2>
+            <div id="lista_modulos" style="display:flex;flex-direction:column;gap:15px;margin:20px 0;"></div>
+            <div class="form-buttons">
+                <button class="btn-guardar" onclick="guardarModulos()">Guardar</button>
+                <button class="btn-cancelar" onclick="cerrarModal('modalModulos')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!-- NUEVO: Modal módulos por PERFIL -->
+    <div id="modalModulosPerfil" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal('modalModulosPerfil')">&times;</span>
+            <h2>Módulos del perfil: <span id="nombre_perfil_mod"></span></h2>
+            <p style="color:#666;font-size:13px;margin-bottom:8px;">
+                Configurá qué secciones pueden ver los usuarios con este perfil.
+            </p>
+            <div id="lista_modulos_perfil" style="display:flex;flex-direction:column;gap:15px;margin:20px 0;"></div>
+            <div class="form-buttons">
+                <button class="btn-guardar" onclick="guardarModulosPerfil()">Guardar</button>
+                <button class="btn-cancelar" onclick="cerrarModal('modalModulosPerfil')">Cancelar</button>
+            </div>
+        </div>
+    </div>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script
-    src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <script
-        src="https://cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
+    <script src="script_alertas.js"></script>
+
+    <?php if (isset($_SESSION['alerta'])): 
+        $a = $_SESSION['alerta'];
+        unset($_SESSION['alerta']);
+    ?>
+    <script>
+        mdAlert('<?= $a['tipo'] ?>', '<?= $a['titulo'] ?>', '<?= $a['msg'] ?>');
+    </script>
+    <?php endif; ?>
 </body>
 </html>
