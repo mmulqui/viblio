@@ -466,7 +466,7 @@ CREATE TABLE `perfil` (
   `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
   PRIMARY KEY (`id_perfil`),
   UNIQUE KEY `unique_tipo_perfil` (`tipo_perfil`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,8 +475,55 @@ CREATE TABLE `perfil` (
 
 LOCK TABLES `perfil` WRITE;
 /*!40000 ALTER TABLE `perfil` DISABLE KEYS */;
-INSERT INTO `perfil` VALUES (1,'alumno',1),(2,'bibliotecario',1),(3,'profesor',1);
+INSERT INTO `perfil` VALUES (1,'alumno',1),(2,'bibliotecario',1),(3,'profesor',1),(4,'invitado',1);
 /*!40000 ALTER TABLE `perfil` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `after_insert_perfil` AFTER INSERT ON `perfil` FOR EACH ROW BEGIN
+    INSERT INTO perfil_modulos (id_perfil, id_modulo, activo)
+    SELECT NEW.id_perfil, id_modulo, 1
+    FROM modulos_config;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `perfil_modulos`
+--
+
+DROP TABLE IF EXISTS `perfil_modulos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `perfil_modulos` (
+  `id_perfil` int NOT NULL,
+  `id_modulo` int NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id_perfil`,`id_modulo`),
+  KEY `perfil_modulos_ibfk_2` (`id_modulo`),
+  CONSTRAINT `perfil_modulos_ibfk_1` FOREIGN KEY (`id_perfil`) REFERENCES `perfil` (`id_perfil`),
+  CONSTRAINT `perfil_modulos_ibfk_2` FOREIGN KEY (`id_modulo`) REFERENCES `modulos_config` (`id_modulo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `perfil_modulos`
+--
+
+LOCK TABLES `perfil_modulos` WRITE;
+/*!40000 ALTER TABLE `perfil_modulos` DISABLE KEYS */;
+INSERT INTO `perfil_modulos` VALUES (1,1,1),(1,2,1),(1,3,1),(2,1,1),(2,2,1),(2,3,1),(3,1,1),(3,2,1),(3,3,1),(4,1,1),(4,2,1),(4,3,1);
+/*!40000 ALTER TABLE `perfil_modulos` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1154,4 +1201,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-09 17:30:39
+-- Dump completed on 2026-06-26 17:29:19
