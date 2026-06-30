@@ -1,15 +1,29 @@
 <?php
-require_once("../controlers/auth.php");
-verificarRol(['bibliotecario']);
-require_once("../models/conexion.php");
-require_once("../controlers/user_sesion.php");
+require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
+require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
+require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
 
-$objeto    = new conexion();
-$conexion  = $objeto->conectar();
+AuthGuard::verificarRol(['bibliotecario']);
+
 $id_usuario_logueado = (int) $_SESSION["id_usuario"];
 
-// Cargar perfiles activos UNA sola vez para reutilizar en todo el menu
-$perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfil ORDER BY id_perfil", $conexion);
+$usuarioRepo = new UsuarioRepository();
+$libroRepo   = new LibroRepository();
+$perfilRepo  = new PerfilRepository();
+
+// Perfiles (para selects y tabla de roles)
+$perfiles = $perfilRepo->listarTodos();
+
+// Libros (con búsqueda segura vía prepared statements)
+$busqueda     = $_GET["busqueda"] ?? "";
+$mostrartodos = isset($_GET["todos"]);
+$resultado    = $libroRepo->listar($busqueda, $mostrartodos);
+
+// Usuarios (con búsqueda segura vía prepared statements)
+$busqueda_usuarios = $_GET["busqueda_usuarios"] ?? "";
+$todos_usuarios     = isset($_GET["todos_usuarios"]);
+$resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,94 +34,6 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
     <link rel="stylesheet" href="style_menu.css">
 </head>
 <body>
-    <?php
-        $busqueda = $_GET["busqueda"] ?? "";
-        $mostrartodos = isset($_GET["todos"]);
-        if($mostrartodos){
-            $sql = "SELECT libro.titulo,
-               libro.edicion,
-               libro.anio_publicacion,
-               libro.isbn,
-               libro.estado,
-               autor.nombre AS autor,
-               editorial.nombre AS editorial,
-               categoria.nombre AS categoria,
-               genero.nombre AS genero
-        FROM libro
-        JOIN rela_aut_lib ON libro.id_libro = rela_aut_lib.id_libro
-        JOIN autor ON rela_aut_lib.id_autor = autor.id_autor
-        JOIN rela_edit_lib ON libro.id_libro = rela_edit_lib.id_libro
-        JOIN editorial ON rela_edit_lib.id_editorial = editorial.id_editorial
-        JOIN rela_cat_lib_gen ON libro.id_libro = rela_cat_lib_gen.id_libro
-        JOIN categoria ON rela_cat_lib_gen.id_categoria = categoria.id_categoria
-        JOIN genero ON rela_cat_lib_gen.id_genero = genero.id_genero";
-        } else {$sql = "SELECT libro.titulo,
-                                                libro.edicion,
-                                                libro.anio_publicacion,
-                                                libro.isbn,
-                                                libro.estado,
-                                                autor.nombre AS autor,
-                                                editorial.nombre AS editorial,
-                                                categoria.nombre AS categoria,
-                                                genero.nombre AS genero
-                                            FROM libro
-                                            JOIN rela_aut_lib ON libro.id_libro = rela_aut_lib.id_libro
-                                            JOIN autor ON rela_aut_lib.id_autor = autor.id_autor
-                                            JOIN rela_edit_lib ON libro.id_libro = rela_edit_lib.id_libro
-                                            JOIN editorial ON rela_edit_lib.id_editorial = editorial.id_editorial
-                                            JOIN rela_cat_lib_gen ON libro.id_libro = rela_cat_lib_gen.id_libro
-                                            JOIN categoria ON rela_cat_lib_gen.id_categoria = categoria.id_categoria
-                                            JOIN genero ON rela_cat_lib_gen.id_genero = genero.id_genero
-                                            WHERE libro.titulo LIKE '%$busqueda%'
-                                            OR autor.nombre LIKE '%$busqueda%'
-                                            OR editorial.nombre LIKE '%$busqueda%'
-                                            OR categoria.nombre LIKE '%$busqueda%'
-                                            OR genero.nombre LIKE '%$busqueda%'
-                                            OR libro.isbn LIKE '%$busqueda%';";}
-        $resultado = $objeto->consultar($sql, $conexion);
-        $categorias = $objeto->consultar("select * from estado",$conexion);
-
-        $busqueda_usuarios = $_GET["busqueda_usuarios"] ?? "";
-        $todos_usuarios = isset($_GET["todos_usuarios"]);
-        if($todos_usuarios){
-            $sql_u = "SELECT 
-                            u.id_usuario, 
-                            u.activo,
-                            p.nombre, 
-                            p.apellido, 
-                            p.fecha_nacimiento,
-                            p.dni,
-                            u.email,
-                            pf.tipo_perfil AS rol,
-                            a.numero_prestamos,
-                            a.numero_multas
-                        FROM persona p
-                        JOIN usuario u ON p.id_persona = u.persona_id_persona
-                        JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                        LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                        WHERE u.activo = 1;";
-        } else { $sql_u = "SELECT 
-                                u.id_usuario,
-                                u.activo,
-                                p.dni,
-                                p.nombre,
-                                p.apellido,
-                                p.fecha_nacimiento,
-                                u.email,
-                                pf.tipo_perfil AS rol,
-                                a.numero_prestamos,
-                                a.numero_multas
-                            FROM persona p
-                            JOIN usuario u ON p.id_persona = u.persona_id_persona
-                            JOIN perfil pf ON u.id_perfil = pf.id_perfil
-                            LEFT JOIN alumno a ON u.id_usuario = a.usuario_id_usuario
-                            WHERE u.activo = 1
-                                        AND (p.nombre LIKE '%$busqueda_usuarios%' OR
-                                            p.apellido LIKE '%$busqueda_usuarios%' OR
-                                            p.dni LIKE '%$busqueda_usuarios%' OR
-                                            u.email LIKE '%$busqueda_usuarios%');";}
-        $resultadoU = $objeto->consultar($sql_u,$conexion);
-    ?>
     <div class="container">
         <div class="titulo">
             <h1>ViBlio</h1>
@@ -188,7 +114,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                     <ion-icon name="reader-outline"></ion-icon>Exportar a Excel</button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda_usuarios" placeholder="Buscar..." values="<?php= $busqueda ?>">
+                        <input type="text" name="busqueda_usuarios" placeholder="Buscar..." value="<?= htmlspecialchars($busqueda_usuarios) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos_usuarios">Todos</button>
                     </form>
@@ -209,36 +135,34 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            foreach($resultadoU as $fila){
-                            ?>
+                            <?php foreach ($resultadoU as $fila): ?>
                             <tr>
-                                <td><?php echo $fila ["dni"]?></td>
-                                <td><?Php echo $fila ["nombre"]?></td>
-                                <td><?Php echo $fila ["apellido"]?></td>
-                                <td><?Php echo $fila ["fecha_nacimiento"]?></td>
-                                <td><?Php echo $fila ["email"]?></td>
-                                <td><?Php echo $fila ["rol"]?></td>
-                                <td><?Php echo $fila ["numero_prestamos"]?></td>
-                                <td><?Php echo $fila ["numero_multas"]?></td>
+                                <td><?= htmlspecialchars($fila["dni"]) ?></td>
+                                <td><?= htmlspecialchars($fila["nombre"]) ?></td>
+                                <td><?= htmlspecialchars($fila["apellido"]) ?></td>
+                                <td><?= htmlspecialchars($fila["fecha_nacimiento"]) ?></td>
+                                <td><?= htmlspecialchars($fila["email"]) ?></td>
+                                <td><?= htmlspecialchars($fila["rol"]) ?></td>
+                                <td><?= htmlspecialchars((string) $fila["numero_prestamos"]) ?></td>
+                                <td><?= htmlspecialchars((string) $fila["numero_multas"]) ?></td>
                                 <td class="acciones">
-                                    <?php if (!mismoUsuario($id_usuario_logueado, (int)$fila["id_usuario"])):?>
-                                    <button class="btn-modificar" onclick="modificarUsuario('<?php echo $fila['dni']?>')" title="Modificar">
+                                    <?php if (!AuthGuard::esElMismoUsuario($id_usuario_logueado, (int) $fila["id_usuario"])): ?>
+                                    <button class="btn-modificar" onclick="modificarUsuario('<?= htmlspecialchars($fila['dni']) ?>')" title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
-                                    <button class="btn-eliminar" onclick="eliminarUsuario('<?php echo $fila['dni']?>')" title="Eliminar">
+                                    <button class="btn-eliminar" onclick="eliminarUsuario('<?= htmlspecialchars($fila['dni']) ?>')" title="Eliminar">
                                         <ion-icon name="trash-outline"></ion-icon> 
                                     </button>
                                     <?php else: ?>
                                         <span title="No podes editar tu propio usuario">-</span>
                                     <?php endif; ?>
                                     <button class="btn-accion" style="background:#10B981;color:white;" 
-                                            onclick="gestionarModulos(<?= $fila['id_usuario'] ?>, '<?= htmlspecialchars($fila['nombre']) ?>')">
+                                            onclick="gestionarModulos(<?= (int) $fila['id_usuario'] ?>, '<?= htmlspecialchars($fila['nombre']) ?>')">
                                         <ion-icon name="apps-outline"></ion-icon>
                                     </button>
                                 </td>
                             </tr>
-                            <?php } ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -255,7 +179,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalAgregarLibro')">&times;</span>
                     <h2>Agregar Nuevo Libro</h2>
-                    <form action="procesar_libro.php" method="POST">
+                    <form action="../controlers/procesar_libro.php" method="POST">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>ISBN:</label>
@@ -312,7 +236,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                 </button>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda" placeholder="Buscar..." values="<?= htmlspecialchars($busqueda) ?>">
+                        <input type="text" name="busqueda" placeholder="Buscar..." value="<?= htmlspecialchars($busqueda) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
                     </form>
@@ -334,34 +258,32 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            foreach($resultado as $fila){
-                            ?>
+                            <?php foreach ($resultado as $fila): ?>
                             <tr>
-                                <td><?Php echo $fila ["isbn"]?></td>
-                                <td><?Php echo $fila ["titulo"]?></td>
-                                <td><?Php echo $fila ["edicion"]?></td>
-                                <td><?Php echo $fila ["autor"]?></td>
-                                <td><?Php echo $fila ["editorial"]?></td>
-                                <td><?Php echo $fila ["categoria"]?></td>
-                                <td><?Php echo $fila ["genero"]?></td>
-                                <td><?Php echo $fila ["anio_publicacion"]?></td>
+                                <td><?= htmlspecialchars($fila["isbn"]) ?></td>
+                                <td><?= htmlspecialchars($fila["titulo"]) ?></td>
+                                <td><?= htmlspecialchars($fila["edicion"]) ?></td>
+                                <td><?= htmlspecialchars($fila["autor"]) ?></td>
+                                <td><?= htmlspecialchars($fila["editorial"]) ?></td>
+                                <td><?= htmlspecialchars($fila["categoria"]) ?></td>
+                                <td><?= htmlspecialchars($fila["genero"]) ?></td>
+                                <td><?= htmlspecialchars((string) $fila["anio_publicacion"]) ?></td>
                                 <td>
-                                    <select class="select-estado" onchange="cambiarEstado('<?php echo $fila['isbn']?>', this.value)">
-                                        <option value="1" <?php echo ($fila["estado"] == 1) ? 'selected' : ''; ?>>✓ Disponible</option>
-                                        <option value="0" <?php echo ($fila["estado"] == 0) ? 'selected' : ''; ?>>✗ No disponible</option>
+                                    <select class="select-estado" onchange="cambiarEstado('<?= htmlspecialchars($fila['isbn']) ?>', this.value)">
+                                        <option value="1" <?= ($fila["estado"] == 1) ? 'selected' : ''; ?>>✓ Disponible</option>
+                                        <option value="0" <?= ($fila["estado"] == 0) ? 'selected' : ''; ?>>✗ No disponible</option>
                                     </select>
                                 </td>
                                 <td class="acciones">
-                                    <button class="btn-modificar" onclick="modificarLibro('<?php echo $fila['isbn']?>')" title="modificar">
+                                    <button class="btn-modificar" onclick="modificarLibro('<?= htmlspecialchars($fila['isbn']) ?>')" title="modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
-                                    <button class="btn-eliminar" onclick="eliminarlibro('<?php echo $fila['isbn']?>')" title="eliminar">
+                                    <button class="btn-eliminar" onclick="eliminarlibro('<?= htmlspecialchars($fila['isbn']) ?>')" title="eliminar">
                                         <ion-icon name="trash-outline"></ion-icon> 
                                     </button>
                                 </td>
                             </tr>
-                            <?php } ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -450,7 +372,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                         <tbody>
                             <?php foreach ($perfiles as $p): ?>
                             <tr class="fila-libro">
-                                <td><?= $p['id_perfil'] ?></td>
+                                <td><?= (int) $p['id_perfil'] ?></td>
                                 <td><?= htmlspecialchars($p['tipo_perfil']) ?></td>
                                 <td>
                                     <?php if ($p['activo']): ?>
@@ -461,17 +383,17 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
                                 </td>
                                 <td class="acciones">
                                     <button class="btn-accion btn-editar"
-                                            onclick="modificarPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            onclick="modificarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
                                             title="Modificar">
                                         <ion-icon name="create-outline"></ion-icon>
                                     </button>
                                     <button class="btn-accion btn-eliminar"
-                                            onclick="eliminarPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            onclick="eliminarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
                                             title="Eliminar (baja lógica)">
                                         <ion-icon name="trash-outline"></ion-icon>
                                     </button>
                                     <button class="btn-accion" style="background:#10B981;color:white;"
-                                            onclick="gestionarModulosPerfil(<?= $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            onclick="gestionarModulosPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
                                             title="Gestionar módulos del perfil">
                                         <ion-icon name="apps-outline"></ion-icon>
                                     </button>
@@ -608,7 +530,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
     <!-- Modal módulos por USUARIO (existente) -->
     <div id="modalModulos" class="modal">
         <div class="modal-contenido">
-            <span class="cerrar" onclick="cerrarModal('modalModulos')"></span>
+            <span class="cerrar" onclick="cerrarModal('modalModulos')">&times;</span>
             <h2>Módulos de <span id="nombre_usuario_mod"></span></h2>
             <div id="lista_modulos" style="display:flex;flex-direction:column;gap:15px;margin:20px 0;"></div>
             <div class="form-buttons">
@@ -617,7 +539,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
             </div>
         </div>
     </div>
-    <!-- NUEVO: Modal módulos por PERFIL -->
+    <!-- Modal módulos por PERFIL -->
     <div id="modalModulosPerfil" class="modal">
         <div class="modal-contenido">
             <span class="cerrar" onclick="cerrarModal('modalModulosPerfil')">&times;</span>
@@ -645,7 +567,7 @@ $perfiles = $objeto->consultar("SELECT id_perfil, tipo_perfil, activo FROM perfi
         unset($_SESSION['alerta']);
     ?>
     <script>
-        mdAlert('<?= $a['tipo'] ?>', '<?= $a['titulo'] ?>', '<?= $a['msg'] ?>');
+        mdAlert('<?= $a['tipo'] ?>', '<?= $a['titulo'] ?>', '<?= addslashes($a['msg']) ?>');
     </script>
     <?php endif; ?>
 </body>
