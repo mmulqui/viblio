@@ -1,9 +1,6 @@
 <?php
 /**
  * UsuarioService — lógica de negocio para usuarios.
- *
- * Responsabilidad: validaciones, transformaciones y reglas de negocio.
- * No habla con la BD (eso le corresponde a UsuarioRepository).
  */
 class UsuarioService
 {

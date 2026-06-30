@@ -5,10 +5,6 @@ require_once dirname(__DIR__) . '/Usuarios/UsuarioService.php';
 
 /**
  * RegistroController — registro de nuevos usuarios.
- *
- * Cubre dos flujos:
- *  1. handle()   → registro desde form (público o desde el menú del bibliotecario)
- *  2. verificar() → confirmación por link de email (token)
  */
 class RegistroController
 {
@@ -18,8 +14,6 @@ class RegistroController
     {
         $this->service = new UsuarioService();
     }
-
-    // ─── Punto de entrada: procesar_registro.php ─────────────────────────────
 
     public function handle(): void
     {
@@ -71,9 +65,7 @@ class RegistroController
         } else {
             $this->registroDirecto($db, $fechaDB, $passwordHash);
         }
-    }
-
-    // ─── Punto de entrada: verificar_email.php ───────────────────────────────
+    }─
 
     public function verificar(): void
     {
@@ -132,8 +124,6 @@ class RegistroController
         }
         exit;
     }
-
-    // ─── Privados ─────────────────────────────────────────────────────────────
 
     private function registroConEmail(mysqli $db, string $fechaDB, string $passwordHash): void
     {

@@ -15,8 +15,6 @@ class ModuloController
         $this->repo = new ModuloRepository();
     }
 
-    // ─── Por perfil ───────────────────────────────────────────────────────────
-
     public function obtenerPorPerfil(): void
     {
         header('Content-Type: application/json');
@@ -46,8 +44,6 @@ class ModuloController
         $this->repo->guardarPorPerfil($idPerfil, $idsActivos);
         echo json_encode(['success' => true, 'message' => 'Módulos del perfil actualizados correctamente']);
     }
-
-    // ─── Por usuario ──────────────────────────────────────────────────────────
 
     public function obtenerPorUsuario(): void
     {

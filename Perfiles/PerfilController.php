@@ -5,11 +5,6 @@ require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
 
 /**
  * PerfilController — gestión de perfiles/roles del sistema.
- *
- * Acciones:
- *  - agregar()    POST  → redirige con alerta
- *  - modificar()  POST  → redirige con alerta
- *  - eliminar()   POST  → JSON (AJAX)
  */
 class PerfilController
 {
@@ -96,8 +91,6 @@ class PerfilController
             : ['ok' => false, 'msg' => 'No se pudo eliminar el perfil.']
         );
     }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private function redirigirConAlerta(string $tipo, string $titulo, string $msg): void
     {

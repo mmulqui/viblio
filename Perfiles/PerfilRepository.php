@@ -16,8 +16,6 @@ class PerfilRepository
         $this->db = Database::getConexion();
     }
 
-    // ─── Lectura ──────────────────────────────────────────────────────────────
-
     /** Lista todos los perfiles ordenados por id. */
     public function listarTodos(): array
     {
@@ -53,8 +51,6 @@ class PerfilRepository
         $stmt->close();
         return $existe;
     }
-
-    // ─── Escritura ────────────────────────────────────────────────────────────
 
     public function agregar(string $tipoPerfil): bool
     {

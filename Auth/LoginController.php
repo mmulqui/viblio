@@ -4,11 +4,6 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 
 /**
  * LoginController — maneja el inicio de sesión.
- *
- * Responsabilidades:
- *  - Validar credenciales contra la BD
- *  - Crear la sesión segura
- *  - Redirigir según el rol del usuario
  */
 class LoginController
 {
@@ -64,7 +59,6 @@ class LoginController
         $this->redirigirPorRol($rol);
     }
 
-    // ─── Privados ─────────────────────────────────────────────────────────────
 
     private function obtenerRol(mysqli $db, int $idUsuario): string
     {

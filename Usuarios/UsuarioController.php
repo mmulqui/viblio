@@ -5,14 +5,6 @@ require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioService.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
 
-/**
- * UsuarioController — maneja los endpoints HTTP de gestión de usuarios.
- *
- * Acciones disponibles:
- *  - obtener($dni)  GET  → JSON con datos del usuario
- *  - modificar()    POST → redirige con alerta SweetAlert
- *  - eliminar($dni) GET  → redirige con alerta SweetAlert
- */
 class UsuarioController
 {
     private UsuarioRepository $repo;
@@ -25,8 +17,6 @@ class UsuarioController
         $this->service = new UsuarioService();
     }
 
-    // ─── Entrada principal ────────────────────────────────────────────────────
-
     /** Dispatcher: lee ?accion= o la ruta que llama directamente al método. */
     public function handle(): void
     {
@@ -38,8 +28,6 @@ class UsuarioController
             default     => $this->redirigir(),
         };
     }
-
-    // ─── Acciones públicas (llamadas desde los entry points) ─────────────────
 
     public function obtener(): void
     {
@@ -124,7 +112,6 @@ class UsuarioController
             : $this->alerta('warning', 'Ups', 'No se encontró una persona con ese DNI.');
     }
 
-    // ─── Helpers privados ────────────────────────────────────────────────────
 
     private function alerta(string $tipo, string $titulo, string $msg): void
     {

@@ -1,9 +1,6 @@
 <?php
 /**
  * Usuario — entidad que representa un usuario del sistema.
- *
- * Es un objeto de solo lectura (readonly) que agrupa los datos
- * de las tablas persona + usuario + perfil + alumno.
  */
 class Usuario
 {

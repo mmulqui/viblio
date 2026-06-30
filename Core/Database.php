@@ -1,15 +1,6 @@
 <?php
 /**
- * Database — conexión única (Singleton) a MySQL.
- *
- * Uso:
- *   $db = Database::getConexion();   // obtiene/crea la conexión
- *   Database::cerrar();              // cierra explícitamente (opcional)
- *
- * Ventajas sobre la clase `conexion` anterior:
- *  - Una sola conexión por request (no se abre/cierra decenas de veces)
- *  - Lanza excepción con mensaje claro si falla la conexión
- *  - Charset UTF-8 siempre configurado
+ * Database — conexión única a MySQL.
  */
 class Database
 {

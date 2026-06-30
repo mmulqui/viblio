@@ -13,8 +13,6 @@ class ModuloRepository
         $this->db = Database::getConexion();
     }
 
-    // ─── Por perfil ───────────────────────────────────────────────────────────
-
     /** Devuelve los módulos de un perfil con su estado activo/inactivo. */
     public function obtenerPorPerfil(int $idPerfil): array
     {
@@ -53,8 +51,6 @@ class ModuloRepository
         }
         return true;
     }
-
-    // ─── Por usuario ──────────────────────────────────────────────────────────
 
     /** Devuelve los módulos de un usuario con su estado activo/inactivo. */
     public function obtenerPorUsuario(int $idUsuario): array

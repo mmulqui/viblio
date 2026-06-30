@@ -3,9 +3,6 @@ require_once dirname(__DIR__) . '/Core/Database.php';
 
 /**
  * UsuarioRepository — todas las consultas a la BD relacionadas con usuarios.
- *
- * Responsabilidad única: hablar con la base de datos.
- * No contiene lógica de negocio (eso va en UsuarioService).
  */
 class UsuarioRepository
 {
@@ -121,8 +118,6 @@ class UsuarioRepository
         $stmt->close();
         return $existe;
     }
-
-    // ─── Consultas de escritura ───────────────────────────────────────────────
 
     /** Llama al SP para registrar un alumno. */
     public function registrarAlumno(array $datos, string $passwordHash): bool

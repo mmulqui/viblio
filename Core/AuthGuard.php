@@ -3,11 +3,6 @@
  * AuthGuard — gestión de sesión, roles y protección de endpoints.
  *
  * Reemplaza las funciones sueltas de auth.php con una clase estática.
- *
- * Uso:
- *   AuthGuard::verificarSesion();              // solo valida que haya sesión activa
- *   AuthGuard::verificarRol(['bibliotecario']); // valida sesión + rol
- *   AuthGuard::esElMismoUsuario(1, 2);         // false → se puede operar
  */
 class AuthGuard
 {

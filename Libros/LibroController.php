@@ -3,16 +3,6 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Libros/Libro.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 
-/**
- * LibroController — maneja todos los endpoints HTTP de gestión de libros.
- *
- * Acciones:
- *  - registrar()    POST  → redirige con alerta
- *  - modificar()    POST  → redirige con alerta
- *  - eliminar()     GET   → redirige con alerta
- *  - obtener()      GET   → JSON
- *  - cambiarEstado() POST → JSON
- */
 class LibroController
 {
     private LibroRepository $repo;
@@ -106,7 +96,7 @@ class LibroController
         );
     }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────
+    // Helpers
 
     private function alerta(string $tipo, string $titulo, string $msg): void
     {

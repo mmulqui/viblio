@@ -1,14 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/Core/Database.php';
 
-/**
- * LibroRepository — todas las consultas a la BD relacionadas con libros.
- *
- * Corrige los bugs del código original:
- *  - Usa prepared statements en lugar de interpolación directa (sin SQL injection)
- *  - Elimina el bug de `$titulo` faltante en procesar_libro.php
- *  - Agrega auth en todos los endpoints que la requerían
- */
+
 class LibroRepository
 {
     private mysqli $db;
@@ -17,8 +10,6 @@ class LibroRepository
     {
         $this->db = Database::getConexion();
     }
-
-    // ─── Lectura ──────────────────────────────────────────────────────────────
 
     private function sqlBase(): string
     {
@@ -38,7 +29,7 @@ class LibroRepository
                 LEFT JOIN genero           g   ON rcg.id_genero = g.id_genero";
     }
 
-    /** Lista libros con búsqueda opcional. Todos los parámetros como prepared. */
+    /** Lista libros con búsqueda opcional.*/
     public function listar(string $busqueda = '', bool $todos = false): array
     {
         $sql = $this->sqlBase();
@@ -99,8 +90,6 @@ class LibroRepository
         return $fila ?: null;
     }
 
-    // ─── Escritura ────────────────────────────────────────────────────────────
-
     /** Registra un nuevo libro vía stored procedure. */
     public function registrar(array $datos): bool
     {
@@ -147,7 +136,6 @@ class LibroRepository
 
     /**
      * Elimina un libro y sus relaciones (en transacción).
-     * Corrige el código original que no usaba transacción.
      */
     public function eliminar(string $isbn): bool
     {
