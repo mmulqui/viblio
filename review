@@ -1,0 +1,2 @@
+* Se debe respetar el patron mvc y vertical slicing.
+* El password se encuentra declarado en varios archivos.
