@@ -65,7 +65,7 @@ class RegistroController
         } else {
             $this->registroDirecto($db, $fechaDB, $passwordHash);
         }
-    }─
+    }
 
     public function verificar(): void
     {

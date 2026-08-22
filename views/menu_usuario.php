@@ -69,12 +69,25 @@ $resultado    = $libroRepo->listarActivos($busqueda, $mostrartodos);
             </div>
             <div class="content">
                 <h3>Libros disponibles</h3>
+
+
+
+           
+
+
                 <div class="box">
                     <form method="GET">
                         <input type="text" name="busqueda" placeholder="Buscar por título, autor, ISBN..." value="<?= htmlspecialchars($busqueda) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
                     </form>
+
+
+                     
+
+
+
+                    
                 </div>
                 <div class="tabla">
                     <table>

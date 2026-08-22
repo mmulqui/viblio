@@ -682,6 +682,24 @@ table tr:hover {
     border: 1px solid #f5c6cb;
 }
 
+
+
+
+
+.box .carritoBoton button {
+    background: #10B981;
+    border: none;
+    color: white;
+    padding: 5px 5px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    right: 380px;
+    position: absolute;
+}
+
+
+
 .box {
     display: flex;
     align-items: center;

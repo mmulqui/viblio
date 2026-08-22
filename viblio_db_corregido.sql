@@ -29,7 +29,7 @@ CREATE TABLE `alumno` (
   `numero_prestamos` int unsigned DEFAULT NULL,
   `numero_multas` int unsigned DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_alumno`,`usuario_id_usuario`),
+  PRIMARY KEY (`id_alumno`),
   KEY `fk_alumno_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_alumno_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -110,7 +110,7 @@ CREATE TABLE `bibliotecario` (
   `id_biblitecario` int NOT NULL AUTO_INCREMENT,
   `turno` varchar(25) DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_biblitecario`,`usuario_id_usuario`),
+  PRIMARY KEY (`id_biblitecario`),
   KEY `fk_bibliotecario_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_bibliotecario_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -597,7 +597,7 @@ CREATE TABLE `profesor` (
   `id_profesor` int NOT NULL AUTO_INCREMENT,
   `numero_prestamos` int unsigned DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_profesor`,`usuario_id_usuario`),
+  PRIMARY KEY (`id_profesor`),
   KEY `fk_profesor_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_profesor_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -836,7 +836,7 @@ CREATE TABLE `usuario` (
   `id_perfil` int DEFAULT NULL,
   `persona_id_persona` int NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT (1) COMMENT '1 = activo, 0 = eliminado (borrado logico)',
-  PRIMARY KEY (`id_usuario`,`persona_id_persona`),
+  PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `unique_email` (`email`),
   UNIQUE KEY `contraseña` (`contraseña`),
   KEY `id_perfil` (`id_perfil`),
