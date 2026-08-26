@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Core/ValidadorContrasenia.php';
 
 /**
  * LoginController — maneja el inicio de sesión.
@@ -21,12 +22,30 @@ class LoginController
             exit;
         }
 
+
+
+        /*FALTA AÑADIR CSS PARA QUE SE MUESTRE EN LA PÁGINA 
+        INICIO SESION Y REGISTRO EL MENSAJE*/
+
+        
+        /*ESTA PARTE SE RELACIONA CON ValidadorContrasenia.php */
+
         $email       = trim($_POST['email'] ?? '');
         $contrasenia = $_POST['contrasenia'] ?? '';
 
-        if (!$email || !$contrasenia) {
-            $this->error('Completá todos los campos.');
+        $errores = array_merge(
+            ValidadorContrasenia::email($email),
+            ValidadorContrasenia::requerido($contrasenia, 'contraseña')
+        );
+
+
+        if (!empty($errores)) {
+            $this->error(implode(' ', $errores));
         }
+
+
+
+
 
         $db = Database::getConexion();
 

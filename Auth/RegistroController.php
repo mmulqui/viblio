@@ -2,6 +2,10 @@
 require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioService.php';
+require_once dirname(__DIR__) . '/Core/ValidadorContrasenia.php';
+
+
+
 
 /**
  * RegistroController — registro de nuevos usuarios.
@@ -25,6 +29,11 @@ class RegistroController
             AuthGuard::verificarRol(['bibliotecario']);
         }
 
+
+
+
+
+
         // Validar campos obligatorios
         $campos = ['nombre', 'apellido', 'fecha_nacimiento', 'dni', 'email', 'contrasenia'];
         if ($esPublico) $campos[] = 'confirmar_contrasenia';
@@ -35,10 +44,45 @@ class RegistroController
             }
         }
 
+
+        /*FALTA AÑADIR CSS PARA QUE SE MUESTRE EN LA PÁGINA 
+        INICIO SESION Y REGISTRO EL MENSAJE*/
+
+        /*ESTA PARTE SE RELACIONA CON ValidadorContrasenia.php */
+
+
+
+
+        // NUEVO: validar formato de email
+        $erroresEmail = ValidadorContrasenia::email($_POST['email']);
+        if (!empty($erroresEmail)) {
+           $this->errorRegistro($esPublico, $erroresEmail[0]);
+        }
+
+
+
+
+        // NUEVO: validar formato de contraseña (solo si es registro público,
+        // porque el bibliotecario podría estar creando la cuenta con una temporal)
+        if ($esPublico) {
+            $erroresPassword = ValidadorContrasenia::password($_POST['contrasenia']);
+        if (!empty($erroresPassword)) {
+            $this->errorRegistro($esPublico, $erroresPassword[0]);
+             }
+        }
+
+
+
+
+
         // Confirmar contraseñas (solo registro público)
         if ($esPublico && !$this->service->contrasenasCoinciden($_POST['contrasenia'], $_POST['confirmar_contrasenia'])) {
             $this->errorRegistro($esPublico, 'Las contraseñas no coinciden.');
         }
+
+
+
+
 
         // Validar fecha de nacimiento
         if (!$this->service->validarFechaNacimiento($_POST['fecha_nacimiento'])) {
