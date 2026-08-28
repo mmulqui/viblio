@@ -32,11 +32,16 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu de Gestion</title>
     <link rel="stylesheet" href="style_menu.css">
+    <link rel="stylesheet" href="user_info.css">
 </head>
 <body>
     <div class="container">
         <div class="titulo">
             <h1>ViBlio</h1>
+        </div>
+        <div id="user-info" class="user-info">
+            <ion-icon name="person-circle-outline"></ion-icon>
+            <span id="user-name"></span>
         </div>
         <div class="Menu">
             <ul>
@@ -561,7 +566,19 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
     <script src="script_alertas.js"></script>
-
+    <?php
+        $usuarioActual = $usuarioRepo->obtenerPorId($id_usuario_logueado);
+        $nombreUsuarioActual = $usuarioActual
+            ? $usuarioActual['nombre'] . ' ' . $usuarioActual['apellido']
+            : '';
+    ?>
+    <script>
+        window.usuarioLogueado = {
+            id: <?= $id_usuario_logueado ?>,
+            nombre: "<?=htmlspecialchars($nombreUsuarioActual, ENT_QUOTES) ?>"
+        }
+    </script>
+    <script src="cacheUsuario.js"></script>
     <?php if (isset($_SESSION['alerta'])): 
         $a = $_SESSION['alerta'];
         unset($_SESSION['alerta']);

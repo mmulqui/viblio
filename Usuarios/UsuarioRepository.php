@@ -75,6 +75,28 @@ class UsuarioRepository
         return $fila ?: null;
     }
 
+    public function obtenerPorId(int $idUsuario): ?array
+        {
+            $stmt = $this->db->prepare(
+                "SELECT u.id_usuario, u.email, u.activo,
+                        p.dni, p.nombre, p.apellido, p.fecha_nacimiento,
+                        pf.tipo_perfil AS rol,
+                        COALESCE(a.numero_prestamos, 0) AS numero_prestamos,
+                        COALESCE(a.numero_multas, 0)    AS numero_multas
+                FROM usuario u
+                JOIN persona p  ON u.persona_id_persona = p.id_persona
+                JOIN perfil pf  ON u.id_perfil           = pf.id_perfil
+                LEFT JOIN alumno a ON a.usuario_id_usuario = u.id_usuario
+                WHERE u.id_usuario = ?
+                LIMIT 1"
+            );
+            $stmt->bind_param('i', $idUsuario);
+            $stmt->execute();
+            $fila = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            return $fila ?: null;
+        }
+
     /** Devuelve el id_persona de un usuario por su id_usuario. */
     public function obtenerIdPersona(int $idUsuario): ?int
     {
