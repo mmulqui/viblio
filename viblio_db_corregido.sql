@@ -29,7 +29,7 @@ CREATE TABLE `alumno` (
   `numero_prestamos` int unsigned DEFAULT NULL,
   `numero_multas` int unsigned DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_alumno`),
+  PRIMARY KEY (`id_alumno`,`usuario_id_usuario`),
   KEY `fk_alumno_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_alumno_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -110,7 +110,7 @@ CREATE TABLE `bibliotecario` (
   `id_biblitecario` int NOT NULL AUTO_INCREMENT,
   `turno` varchar(25) DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_biblitecario`),
+  PRIMARY KEY (`id_biblitecario`,`usuario_id_usuario`),
   KEY `fk_bibliotecario_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_bibliotecario_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -201,6 +201,54 @@ CREATE TABLE `estado` (
 LOCK TABLES `estado` WRITE;
 /*!40000 ALTER TABLE `estado` DISABLE KEYS */;
 /*!40000 ALTER TABLE `estado` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `estado_prestamo`
+--
+
+DROP TABLE IF EXISTS `estado_prestamo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `estado_prestamo` (
+  `id_estado` int NOT NULL AUTO_INCREMENT,
+  `descripcion` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `estado_prestamo`
+--
+
+LOCK TABLES `estado_prestamo` WRITE;
+/*!40000 ALTER TABLE `estado_prestamo` DISABLE KEYS */;
+INSERT INTO `estado_prestamo` VALUES (1,'activo'),(2,'devuelto'),(3,'vencido');
+/*!40000 ALTER TABLE `estado_prestamo` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `estado_reserva`
+--
+
+DROP TABLE IF EXISTS `estado_reserva`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `estado_reserva` (
+  `id_estado` int NOT NULL AUTO_INCREMENT,
+  `descripcion` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_estado`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `estado_reserva`
+--
+
+LOCK TABLES `estado_reserva` WRITE;
+/*!40000 ALTER TABLE `estado_reserva` DISABLE KEYS */;
+INSERT INTO `estado_reserva` VALUES (1,'pendiente'),(2,'cumplida'),(3,'cancelada');
+/*!40000 ALTER TABLE `estado_reserva` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -566,15 +614,18 @@ CREATE TABLE `prestamo` (
   `codigo_prestamo` int NOT NULL,
   `fecha_prestamo` datetime NOT NULL,
   `fecha_vencimieto` datetime NOT NULL,
-  `fecha_devolucion` datetime NOT NULL,
+  `fecha_devolucion` datetime DEFAULT NULL,
   `id_libro` int NOT NULL,
   `id_estado` int NOT NULL,
   `id_usuario` int NOT NULL,
   PRIMARY KEY (`id_prestamo`),
   KEY `id_libro_idx` (`id_libro`),
-  KEY `id_estado_idx` (`id_estado`),
-  KEY `id_usuario_idx` (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+  KEY `id_usuario_idx` (`id_usuario`),
+  KEY `fk_prestamo_estado` (`id_estado`),
+  CONSTRAINT `fk_prestamo_estado` FOREIGN KEY (`id_estado`) REFERENCES `estado_prestamo` (`id_estado`),
+  CONSTRAINT `fk_prestamo_libro` FOREIGN KEY (`id_libro`) REFERENCES `libro` (`id_libro`),
+  CONSTRAINT `fk_prestamo_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -583,6 +634,7 @@ CREATE TABLE `prestamo` (
 
 LOCK TABLES `prestamo` WRITE;
 /*!40000 ALTER TABLE `prestamo` DISABLE KEYS */;
+INSERT INTO `prestamo` VALUES (1,507233,'2026-08-30 21:26:36','2026-09-06 21:26:36','2026-08-30 21:26:44',2,2,24);
 /*!40000 ALTER TABLE `prestamo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -597,7 +649,7 @@ CREATE TABLE `profesor` (
   `id_profesor` int NOT NULL AUTO_INCREMENT,
   `numero_prestamos` int unsigned DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  PRIMARY KEY (`id_profesor`),
+  PRIMARY KEY (`id_profesor`,`usuario_id_usuario`),
   KEY `fk_profesor_usuario1_idx` (`usuario_id_usuario`),
   CONSTRAINT `fk_profesor_usuario1` FOREIGN KEY (`usuario_id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -781,9 +833,12 @@ CREATE TABLE `reserva` (
   `id_usuario` int NOT NULL,
   PRIMARY KEY (`id_reserva`),
   KEY `id_libro_idx` (`id_libro`),
-  KEY `id_estado_idx` (`id_estado`),
-  KEY `id_usuario_idx` (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+  KEY `id_usuario_idx` (`id_usuario`),
+  KEY `fk_reserva_estado` (`id_estado`),
+  CONSTRAINT `fk_reserva_estado` FOREIGN KEY (`id_estado`) REFERENCES `estado_reserva` (`id_estado`),
+  CONSTRAINT `fk_reserva_libro` FOREIGN KEY (`id_libro`) REFERENCES `libro` (`id_libro`),
+  CONSTRAINT `fk_reserva_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -792,6 +847,7 @@ CREATE TABLE `reserva` (
 
 LOCK TABLES `reserva` WRITE;
 /*!40000 ALTER TABLE `reserva` DISABLE KEYS */;
+INSERT INTO `reserva` VALUES (1,'2026-08-30 21:27:12','2026-08-30 21:27:12',847114,3,3,20);
 /*!40000 ALTER TABLE `reserva` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -836,7 +892,7 @@ CREATE TABLE `usuario` (
   `id_perfil` int DEFAULT NULL,
   `persona_id_persona` int NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT (1) COMMENT '1 = activo, 0 = eliminado (borrado logico)',
-  PRIMARY KEY (`id_usuario`),
+  PRIMARY KEY (`id_usuario`,`persona_id_persona`),
   UNIQUE KEY `unique_email` (`email`),
   UNIQUE KEY `contraseña` (`contraseña`),
   KEY `id_perfil` (`id_perfil`),
@@ -1201,4 +1257,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-26 17:42:59
+-- Dump completed on 2026-08-30 21:37:18

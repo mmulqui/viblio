@@ -3,14 +3,18 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
+require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
+require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 
 AuthGuard::verificarRol(['bibliotecario']);
 
 $id_usuario_logueado = (int) $_SESSION["id_usuario"];
 
-$usuarioRepo = new UsuarioRepository();
-$libroRepo   = new LibroRepository();
-$perfilRepo  = new PerfilRepository();
+$usuarioRepo  = new UsuarioRepository();
+$libroRepo    = new LibroRepository();
+$perfilRepo   = new PerfilRepository();
+$prestamoRepo = new PrestamoRepository();
+$reservaRepo  = new ReservaRepository();
 
 // Perfiles (para selects y tabla de roles)
 $perfiles = $perfilRepo->listarTodos();
@@ -24,6 +28,19 @@ $resultado    = $libroRepo->listar($busqueda, $mostrartodos);
 $busqueda_usuarios = $_GET["busqueda_usuarios"] ?? "";
 $todos_usuarios     = isset($_GET["todos_usuarios"]);
 $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
+
+// Prestamos (con búsqueda segura vía prepared statements)
+$busqueda_prestamos = $_GET["busqueda_prestamos"] ?? "";
+$todos_prestamos     = isset($_GET["todos_prestamos"]);
+$resultadoP          = $prestamoRepo->listarTodos($busqueda_prestamos, $todos_prestamos);
+
+// Reservas (con búsqueda segura vía prepared statements)
+$busqueda_reservas = $_GET["busqueda_reservas"] ?? "";
+$todos_reservas     = isset($_GET["todos_reservas"]);
+$resultadoR         = $reservaRepo->listarTodos($busqueda_reservas, $todos_reservas);
+
+// Alumnos activos, para los selects de los modales de Agregar Prestamo/Reserva
+$alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -297,11 +314,200 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
         <div id="prestamos" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Prestamos</h2>
+                <button onclick="abrirModal('modalAgregarPrestamo')" class="btn-agregar">
+                    <ion-icon name="add-circle-outline"></ion-icon> Registrar Prestamo
+                </button>
+            </div>
+            <div id="modalAgregarPrestamo" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalAgregarPrestamo')">&times;</span>
+                    <h2>Registrar Nuevo Prestamo</h2>
+                    <form action="../controlers/procesar_prestamo.php" method="POST">
+                        <input type="hidden" name="accion" value="registrar">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Alumno:</label>
+                                <select name="id_usuario" required>
+                                    <option value="">Seleccionar alumno...</option>
+                                    <?php foreach ($alumnosDisponibles as $a): ?>
+                                    <option value="<?= (int) $a['id_usuario'] ?>">
+                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (DNI ' . $a['dni'] . ')') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Libro:</label>
+                                <select name="id_libro" required>
+                                    <option value="">Seleccionar libro...</option>
+                                    <?php foreach ($resultado as $l): ?>
+                                        <?php if ($l['estado'] == 1): ?>
+                                        <option value="<?= (int) $l['id_libro'] ?>">
+                                            <?= htmlspecialchars($l['titulo'] . ' (ISBN ' . $l['isbn'] . ')') ?>
+                                        </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Registrar</button>
+                            <button type="button" onclick="cerrarModal('modalAgregarPrestamo')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="content">
+                <h3>Prestamos</h3>
+                <div class="box">
+                    <form method="GET">
+                        <input type="text" name="busqueda_prestamos" placeholder="Buscar por libro, alumno o DNI..." value="<?= htmlspecialchars($busqueda_prestamos) ?>">
+                        <button><ion-icon name="search"></ion-icon></button>
+                        <button type="submit" name="todos_prestamos">Todos</button>
+                    </form>
+                </div>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Libro</th>
+                                <th>Alumno</th>
+                                <th>DNI</th>
+                                <th>Fecha Prestamo</th>
+                                <th>Vencimiento</th>
+                                <th>Devolución</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($resultadoP as $p): ?>
+                            <tr>
+                                <td><?= htmlspecialchars((string) $p['codigo_prestamo']) ?></td>
+                                <td><?= htmlspecialchars($p['titulo']) ?></td>
+                                <td><?= htmlspecialchars($p['nombre'] . ' ' . $p['apellido']) ?></td>
+                                <td><?= htmlspecialchars($p['dni']) ?></td>
+                                <td><?= htmlspecialchars($p['fecha_prestamo']) ?></td>
+                                <td><?= htmlspecialchars($p['fecha_vencimieto']) ?></td>
+                                <td><?= $p['fecha_devolucion'] ? htmlspecialchars($p['fecha_devolucion']) : '-' ?></td>
+                                <td><?= htmlspecialchars($p['estado_descripcion']) ?></td>
+                                <td class="acciones">
+                                    <?php if ($p['estado_descripcion'] === 'activo'): ?>
+                                    <form action="../controlers/procesar_prestamo.php" method="POST" style="display:inline;">
+                                        <input type="hidden" name="accion" value="devolver">
+                                        <input type="hidden" name="id_prestamo" value="<?= (int) $p['id_prestamo'] ?>">
+                                        <button type="submit" class="btn-modificar" title="Registrar devolución">
+                                            <ion-icon name="checkmark-done-outline"></ion-icon>
+                                        </button>
+                                    </form>
+                                    <?php else: ?>
+                                        <span>-</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div id="reservas" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Reservas</h2>
+                <button onclick="abrirModal('modalAgregarReserva')" class="btn-agregar">
+                    <ion-icon name="add-circle-outline"></ion-icon> Registrar Reserva
+                </button>
+            </div>
+            <div id="modalAgregarReserva" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalAgregarReserva')">&times;</span>
+                    <h2>Registrar Nueva Reserva</h2>
+                    <form action="../controlers/procesar_reserva.php" method="POST">
+                        <input type="hidden" name="accion" value="registrar">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Alumno:</label>
+                                <select name="id_usuario" required>
+                                    <option value="">Seleccionar alumno...</option>
+                                    <?php foreach ($alumnosDisponibles as $a): ?>
+                                    <option value="<?= (int) $a['id_usuario'] ?>">
+                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (DNI ' . $a['dni'] . ')') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Libro:</label>
+                                <select name="id_libro" required>
+                                    <option value="">Seleccionar libro...</option>
+                                    <?php foreach ($resultado as $l): ?>
+                                        <?php if ($l['estado'] == 1): ?>
+                                        <option value="<?= (int) $l['id_libro'] ?>">
+                                            <?= htmlspecialchars($l['titulo'] . ' (ISBN ' . $l['isbn'] . ')') ?>
+                                        </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                                <small style="color:#888;font-size:11px;">Solo se puede reservar un libro que no esté prestado.</small>
+                            </div>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Registrar</button>
+                            <button type="button" onclick="cerrarModal('modalAgregarReserva')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="content">
+                <h3>Reservas</h3>
+                <div class="box">
+                    <form method="GET">
+                        <input type="text" name="busqueda_reservas" placeholder="Buscar por libro, alumno o DNI..." value="<?= htmlspecialchars($busqueda_reservas) ?>">
+                        <button><ion-icon name="search"></ion-icon></button>
+                        <button type="submit" name="todos_reservas">Todos</button>
+                    </form>
+                </div>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Libro</th>
+                                <th>Alumno</th>
+                                <th>DNI</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($resultadoR as $r): ?>
+                            <tr>
+                                <td><?= htmlspecialchars((string) $r['codigo_reserva']) ?></td>
+                                <td><?= htmlspecialchars($r['titulo']) ?></td>
+                                <td><?= htmlspecialchars($r['nombre'] . ' ' . $r['apellido']) ?></td>
+                                <td><?= htmlspecialchars($r['dni']) ?></td>
+                                <td><?= htmlspecialchars($r['fecha_solicitud']) ?></td>
+                                <td><?= htmlspecialchars($r['estado_descripcion']) ?></td>
+                                <td class="acciones">
+                                    <?php if ($r['estado_descripcion'] === 'pendiente'): ?>
+                                    <form action="../controlers/procesar_reserva.php" method="POST" style="display:inline;">
+                                        <input type="hidden" name="accion" value="cancelar">
+                                        <input type="hidden" name="id_reserva" value="<?= (int) $r['id_reserva'] ?>">
+                                        <button type="submit" class="btn-eliminar" title="Cancelar reserva">
+                                            <ion-icon name="close-circle-outline"></ion-icon>
+                                        </button>
+                                    </form>
+                                    <?php else: ?>
+                                        <span>-</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div id="multas" class="tab_content">
