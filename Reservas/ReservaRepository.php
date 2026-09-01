@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/Core/Database.php';
+require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 
 /**
  * ReservaRepository — todas las consultas a la BD relacionadas con reservas.
@@ -65,23 +66,62 @@ class ReservaRepository
         return $resultado;
     }
 
-    /** Crea una reserva pendiente. */
-    public function crear(int $idLibro, int $idUsuario): int
+    /**
+     * Crea una reserva pendiente, validando DENTRO de una transacción con
+     * bloqueo de fila (FOR UPDATE) que el libro no esté prestado — así dos
+     * pedidos simultáneos no se pisan.
+     *
+     * @return array{ok: bool, error: ?string, id_reserva: ?int}
+     */
+    public function crear(int $idLibro, int $idUsuario): array
     {
-        $codigoReserva   = random_int(100000, 999999);
-        $estadoPendiente = self::ESTADO_PENDIENTE;
+        $this->db->begin_transaction();
+        try {
+            $stmt = $this->db->prepare("SELECT id_libro FROM libro WHERE id_libro = ? FOR UPDATE");
+            $stmt->bind_param('i', $idLibro);
+            $stmt->execute();
+            $stmt->store_result();
+            $existeLibro = $stmt->num_rows > 0;
+            $stmt->close();
+            if (!$existeLibro) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'El libro no existe.', 'id_reserva' => null];
+            }
 
-        $stmt = $this->db->prepare(
-            "INSERT INTO reserva
-                (fecha_solicitud, fecha_reserva, codigo_reserva, id_libro, id_estado, id_usuario)
-             VALUES
-                (NOW(), NOW(), ?, ?, ?, ?)"
-        );
-        $stmt->bind_param('iiii', $codigoReserva, $idLibro, $estadoPendiente, $idUsuario);
-        $stmt->execute();
-        $idReserva = $stmt->insert_id;
-        $stmt->close();
-        return $idReserva;
+            $estadoActivoPrestamo = PrestamoRepository::ESTADO_ACTIVO;
+            $stmt = $this->db->prepare(
+                "SELECT id_prestamo FROM prestamo WHERE id_libro = ? AND id_estado = ? FOR UPDATE"
+            );
+            $stmt->bind_param('ii', $idLibro, $estadoActivoPrestamo);
+            $stmt->execute();
+            $stmt->store_result();
+            $yaPrestado = $stmt->num_rows > 0;
+            $stmt->close();
+            if ($yaPrestado) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'No se puede reservar un libro que ya está prestado.', 'id_reserva' => null];
+            }
+
+            $codigoReserva   = random_int(100000, 999999);
+            $estadoPendiente = self::ESTADO_PENDIENTE;
+            $stmt = $this->db->prepare(
+                "INSERT INTO reserva
+                    (fecha_solicitud, fecha_reserva, codigo_reserva, id_libro, id_estado, id_usuario)
+                 VALUES
+                    (NOW(), NOW(), ?, ?, ?, ?)"
+            );
+            $stmt->bind_param('iiii', $codigoReserva, $idLibro, $estadoPendiente, $idUsuario);
+            $stmt->execute();
+            $idReserva = $stmt->insert_id;
+            $stmt->close();
+
+            $this->db->commit();
+            return ['ok' => true, 'error' => null, 'id_reserva' => $idReserva];
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            error_log('Error ReservaRepository::crear: ' . $e->getMessage());
+            return ['ok' => false, 'error' => 'Ocurrió un error al registrar la reserva.', 'id_reserva' => null];
+        }
     }
 
     /** Cancela una reserva pendiente. */

@@ -119,26 +119,96 @@ class PrestamoRepository
         return $resultado;
     }
 
-    // ─── Escritura ──────────────────────────────────────────────────────────
-
-    /** Crea un préstamo nuevo: vencimiento a 7 días desde ahora, estado activo. */
-    public function crear(int $idLibro, int $idUsuario): int
+    /**
+     * Crea un préstamo nuevo, validando disponibilidad y límite DENTRO de una
+     * transacción con bloqueo de fila (FOR UPDATE), para que dos pedidos
+     * simultáneos del mismo libro no pasen la validación al mismo tiempo.
+     *
+     * @return array{ok: bool, error: ?string, id_prestamo: ?int}
+     */
+    public function crear(int $idLibro, int $idUsuario): array
     {
-        $codigoPrestamo = random_int(100000, 999999);
-        $estadoActivo   = self::ESTADO_ACTIVO;
-        $dias           = self::DIAS_PRESTAMO;
+        $this->db->begin_transaction();
+        try {
+            // Bloquea la fila del libro: cualquier otro pedido sobre este mismo
+            // libro tiene que esperar a que esta transacción termine (commit o rollback).
+            $stmt = $this->db->prepare("SELECT id_libro FROM libro WHERE id_libro = ? FOR UPDATE");
+            $stmt->bind_param('i', $idLibro);
+            $stmt->execute();
+            $stmt->store_result();
+            $existeLibro = $stmt->num_rows > 0;
+            $stmt->close();
+            if (!$existeLibro) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'El libro no existe.', 'id_prestamo' => null];
+            }
 
-        $stmt = $this->db->prepare(
-            "INSERT INTO prestamo
-                (codigo_prestamo, fecha_prestamo, fecha_vencimieto, fecha_devolucion, id_libro, id_estado, id_usuario)
-             VALUES
-                (?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), NULL, ?, ?, ?)"
-        );
-        $stmt->bind_param('iiiii', $codigoPrestamo, $dias, $idLibro, $estadoActivo, $idUsuario);
-        $stmt->execute();
-        $idPrestamo = $stmt->insert_id;
-        $stmt->close();
-        return $idPrestamo;
+            $estadoActivo = self::ESTADO_ACTIVO;
+
+            // Con la fila del libro ya bloqueada, esta lectura es segura: nadie más
+            // puede insertar un préstamo activo para este libro mientras esperamos.
+            $stmt = $this->db->prepare(
+                "SELECT id_prestamo FROM prestamo WHERE id_libro = ? AND id_estado = ? FOR UPDATE"
+            );
+            $stmt->bind_param('ii', $idLibro, $estadoActivo);
+            $stmt->execute();
+            $stmt->store_result();
+            $yaPrestado = $stmt->num_rows > 0;
+            $stmt->close();
+            if ($yaPrestado) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'Ese libro ya está prestado.', 'id_prestamo' => null];
+            }
+
+            // Bloquea también la fila del usuario, para que dos préstamos simultáneos
+            // del mismo alumno no burlen el límite de 3 contando "al mismo tiempo".
+            $stmt = $this->db->prepare("SELECT id_usuario FROM usuario WHERE id_usuario = ? FOR UPDATE");
+            $stmt->bind_param('i', $idUsuario);
+            $stmt->execute();
+            $stmt->store_result();
+            $existeUsuario = $stmt->num_rows > 0;
+            $stmt->close();
+            if (!$existeUsuario) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'El usuario no existe.', 'id_prestamo' => null];
+            }
+
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) AS total FROM prestamo WHERE id_usuario = ? AND id_estado = ?"
+            );
+            $stmt->bind_param('ii', $idUsuario, $estadoActivo);
+            $stmt->execute();
+            $total = (int) $stmt->get_result()->fetch_assoc()['total'];
+            $stmt->close();
+            if ($total >= self::LIMITE_PRESTAMOS_ALUMNO) {
+                $this->db->rollback();
+                return [
+                    'ok'          => false,
+                    'error'       => 'Alcanzaste el límite de ' . self::LIMITE_PRESTAMOS_ALUMNO . ' préstamos simultáneos.',
+                    'id_prestamo' => null,
+                ];
+            }
+
+            $codigoPrestamo = random_int(100000, 999999);
+            $dias           = self::DIAS_PRESTAMO;
+            $stmt = $this->db->prepare(
+                "INSERT INTO prestamo
+                    (codigo_prestamo, fecha_prestamo, fecha_vencimieto, fecha_devolucion, id_libro, id_estado, id_usuario)
+                 VALUES
+                    (?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), NULL, ?, ?, ?)"
+            );
+            $stmt->bind_param('iiiii', $codigoPrestamo, $dias, $idLibro, $estadoActivo, $idUsuario);
+            $stmt->execute();
+            $idPrestamo = $stmt->insert_id;
+            $stmt->close();
+
+            $this->db->commit();
+            return ['ok' => true, 'error' => null, 'id_prestamo' => $idPrestamo];
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            error_log('Error PrestamoRepository::crear: ' . $e->getMessage());
+            return ['ok' => false, 'error' => 'Ocurrió un error al registrar el préstamo.', 'id_prestamo' => null];
+        }
     }
 
     /** Marca un préstamo activo como devuelto. */

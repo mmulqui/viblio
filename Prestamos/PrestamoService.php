@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/PrestamoRepository.php';
 
+/**
+ * PrestamoService — lógica de negocio para préstamos.
+ */
 class PrestamoService
 {
     private PrestamoRepository $repo;
@@ -10,24 +13,27 @@ class PrestamoService
         $this->repo = new PrestamoRepository();
     }
 
+    /**
+     * Intenta registrar un préstamo. La validación de disponibilidad y límite
+     * ocurre dentro de una transacción con bloqueo de fila en el repository.
+     *
+     * @return string|null Mensaje de error, o null si el préstamo se registró correctamente.
+     */
     public function solicitarPrestamo(int $idLibro, int $idUsuario): ?string
     {
-        if ($this->repo->libroEstaPrestado($idLibro)) {
-            return 'ese libro ya esta prestado.';
-        }
-
-        if ($this->repo->contarActivosPorUsuario($idUsuario) >= PrestamoRepository::LIMITE_PRESTAMOS_ALUMNO) {
-            return 'Alcanzaste el límite de ' . PrestamoRepository::LIMITE_PRESTAMOS_ALUMNO . ' préstamos simultáneos.';
-        }
- 
-        $this->repo->crear($idLibro, $idUsuario);
-        return null;
+        $resultado = $this->repo->crear($idLibro, $idUsuario);
+        return $resultado['ok'] ? null : $resultado['error'];
     }
 
+    /**
+     * Registra la devolución de un préstamo.
+     *
+     * @return string|null Mensaje de error, o null si la devolución se registró correctamente.
+     */
     public function devolverPrestamo(int $idPrestamo): ?string
     {
         return $this->repo->registrarDevolucion($idPrestamo)
             ? null
-            : 'No se pudo registrar la devolucion (verifica que el préstamo exista y siga activo).';
+            : 'No se pudo registrar la devolución (verificá que el préstamo exista y siga activo).';
     }
 }

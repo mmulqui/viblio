@@ -1,35 +1,28 @@
 <?php
 require_once __DIR__ . '/ReservaRepository.php';
-require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 
 /**
  * ReservaService — lógica de negocio para reservas.
  */
 class ReservaService
 {
-    private ReservaRepository  $repo;
-    private PrestamoRepository $prestamoRepo;
+    private ReservaRepository $repo;
 
     public function __construct()
     {
-        $this->repo         = new ReservaRepository();
-        $this->prestamoRepo = new PrestamoRepository();
+        $this->repo = new ReservaRepository();
     }
 
     /**
-     * Intenta registrar una reserva. Regla de negocio: un libro que ya está
-     * prestado no se puede reservar.
+     * Intenta registrar una reserva. La validación de "no está prestado"
+     * ocurre dentro de una transacción con bloqueo de fila en el repository.
      *
      * @return string|null Mensaje de error, o null si la reserva se registró correctamente.
      */
     public function solicitarReserva(int $idLibro, int $idUsuario): ?string
     {
-        if ($this->prestamoRepo->libroEstaPrestado($idLibro)) {
-            return 'No se puede reservar un libro que ya está prestado.';
-        }
-
-        $this->repo->crear($idLibro, $idUsuario);
-        return null;
+        $resultado = $this->repo->crear($idLibro, $idUsuario);
+        return $resultado['ok'] ? null : $resultado['error'];
     }
 
     /**
