@@ -3,15 +3,15 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
-<<<<<<< HEAD
 require_once __DIR__ . '/../Core/AuditoriaRepository.php';
 
 $auditorias = (new AuditoriaRepository())->listarUltimos(50);
 
-=======
+
+
+
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
->>>>>>> 7458879fff2381bdf32003bd82d9b93a1a92b231
 
 AuthGuard::verificarRol(['bibliotecario']);
 
