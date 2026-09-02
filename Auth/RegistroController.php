@@ -3,6 +3,7 @@ require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioService.php';
 require_once dirname(__DIR__) . '/Core/ValidadorContrasenia.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php'; //Se conecta con LoginController y Auditoria.php
 
 
 
@@ -222,9 +223,22 @@ class RegistroController
             $_POST['dni'], $_POST['email'], $passwordHash
         );
 
+
+
+        
+        /** Parte relacionada con Auditoria.php, AuditoriaRepository */
+
+
+
+
+
         if ($stmt->execute()) {
+        Auditoria::registrar($db, null, 'registro_usuario', "email: " . $_POST['email']);
+         $_SESSION['alerta'] = ['tipo' => 'success', 'titulo' => '¡Éxito!', 'msg' => 'Usuario registrado correctamente.'];
+        }
+        /*if ($stmt->execute()) {
             $_SESSION['alerta'] = ['tipo' => 'success', 'titulo' => '¡Éxito!', 'msg' => 'Usuario registrado correctamente.'];
-        } else {
+        }*/ else {
             error_log("Error registrar_alumno (admin): " . $stmt->error);
             $_SESSION['alerta'] = ['tipo' => 'error', 'titulo' => 'Error', 'msg' => 'No se pudo registrar el usuario. Intentá de nuevo.'];
         }

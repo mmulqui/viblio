@@ -3,6 +3,10 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
+require_once __DIR__ . '/../Core/AuditoriaRepository.php';
+
+$auditorias = (new AuditoriaRepository())->listarUltimos(50);
+
 
 AuthGuard::verificarRol(['bibliotecario']);
 
@@ -51,6 +55,7 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
                 <li><a onclick="showtab('reservas')"><ion-icon name="bookmark-outline"></ion-icon>Reservas</a></li>
                 <li><a onclick="showtab('multas')"><ion-icon name="warning-outline"></ion-icon>Multas</a></li>
                 <li><a onclick="showtab('perfiles')"><ion-icon name="shield-outline"></ion-icon>Perfiles</a></li>
+                 <li><a onclick="showtab('auditoria')"><ion-icon name="newspaper-outline"></ion-icon>Auditoria</a></li>
                 <li><a href="#" onclick="mdConfirm('¿Cerrar sesión?', function(){ window.location.href='logout.php'; })"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
             </ul>
         </div>
@@ -294,21 +299,38 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
                 </div>
             </div>
         </div>
+
+
+
+
         <div id="prestamos" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Prestamos</h2>
             </div>
         </div>
+
+
+
+
         <div id="reservas" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Reservas</h2>
             </div>
         </div>
+
+
+
+
         <div id="multas" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Multas</h2>
             </div>
         </div>
+
+
+
+
+
         <div id="perfiles" class="tab_content">
             <div class="encabezado">
                 <h2>Gestión de Perfiles</h2>
@@ -362,6 +384,12 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
                 </div>
             </div>
         
+
+
+
+
+
+
             <div class="content">
                 <h3>Perfiles / Roles</h3>
                 <div class="tabla">
@@ -559,6 +587,73 @@ $resultadoU         = $usuarioRepo->listar($busqueda_usuarios, $todos_usuarios);
             </div>
         </div>
     </div>
+
+
+
+
+
+
+     <!-- MODULO AUDITORIA -->
+
+    <div class="moduloAuditoria">
+                <h3>Usuarios</h3>
+                <div class="tablaAuditoria">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Usuario</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <?php $contador = 1; ?>
+                        <?php foreach ($auditorias as $a): ?>
+                <tr class="filaAuditoria">
+                    <td><?= $contador++ ?></td>
+                    <td><?= htmlspecialchars($a['email'] ?? 'Desconocido') ?></td>
+                    <td><?= htmlspecialchars($a['fecha']) ?></td>
+                    <td class="acciones">
+                                    <button class="btn-accion btn-editar"
+                                            onclick="modificarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Modificar">
+                                        <ion-icon name="create-outline"></ion-icon>
+                                    </button>
+                                    <button class="btn-accion btn-eliminar"
+                                            onclick="eliminarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Eliminar (baja lógica)">
+                                        <ion-icon name="trash-outline"></ion-icon>
+                                    </button>
+                                    <button class="btn-accion" style="background:#10B981;color:white;"
+                                            onclick="gestionarModulosPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
+                                            title="Gestionar módulos del perfil">
+                                        <ion-icon name="apps-outline"></ion-icon>
+                                    </button>
+                                </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>

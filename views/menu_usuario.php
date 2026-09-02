@@ -158,6 +158,16 @@ $resultado    = $libroRepo->listarActivos($busqueda, $mostrartodos);
 
 
 
+        <?php if ($modulos['reservas'] ?? false): ?>
+        <div id="reservas" class="tab_content">
+            <div class="encabezado"><h2>Mis Reservas</h2></div>
+            <div class="content">
+                <p style="color:#999;padding:20px;">Próximamente podrás ver tus reservas aquí.</p>
+            </div>
+        </div>
+        <?php endif; ?>
+
+
 
 
         

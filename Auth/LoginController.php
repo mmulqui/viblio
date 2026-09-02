@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Core/ValidadorContrasenia.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php'; //Conectado con auditoria.php
 
 /**
  * LoginController — maneja el inicio de sesión.
@@ -22,6 +23,11 @@ class LoginController
             exit;
         }
 
+
+
+
+
+        
 
 
         /*FALTA AÑADIR CSS PARA QUE SE MUESTRE EN LA PÁGINA 
@@ -62,6 +68,17 @@ class LoginController
             $this->error('Email o contraseña incorrecto.');
         }
 
+
+
+
+        if (!$usuario) {
+        Auditoria::registrar($db, null, 'login_fallido', "email intentado: $email");
+        $this->error('Email o contraseña incorrecto.');
+        }
+
+
+
+
         $hashGuardado = $usuario['contraseña'];
 
         // Contraseña sin hash (legado) — pedir reseteo
@@ -76,7 +93,16 @@ class LoginController
         $rol = $this->obtenerRol($db, (int) $usuario['id_usuario']);
         $this->crearSesion($usuario, $rol);
         $this->redirigirPorRol($rol);
-    }
+    
+
+
+
+        $rol = $this->obtenerRol($db, (int) $usuario['id_usuario']);
+        Auditoria::registrar($db, (int) $usuario['id_usuario'], 'login_exitoso');
+        $this->crearSesion($usuario, $rol);
+        $this->redirigirPorRol($rol);
+
+        }
 
 
     private function obtenerRol(mysqli $db, int $idUsuario): string
