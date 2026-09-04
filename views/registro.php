@@ -77,6 +77,16 @@
                 });
             }
         })();
+
+        // Alerta para errores de validación (contraseña débil, email duplicado, etc.)
+        <?php if (isset($_GET['error'])): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: <?= json_encode(htmlspecialchars($_GET['error'])) ?>,
+            confirmButtonColor: '#10B981'
+        });
+        <?php endif; ?>
     </script>
 
 </body>
