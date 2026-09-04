@@ -648,6 +648,43 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             </div>
         </div>
 
+        <div id="auditoria" class="tab_content">
+            <div class="encabezado">
+                <h2>Historial de Auditoría</h2>
+            </div>
+            <div class="content">
+                <h3>Últimas acciones registradas</h3>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $contador = 1; ?>
+                            <?php foreach ($auditorias as $a): ?>
+                            <tr class="filaAuditoria">
+                                <td><?= $contador++ ?></td>
+                                <td><?= htmlspecialchars($a['email'] ?? 'Sistema') ?></td>
+                                <td><?= htmlspecialchars($a['accion']) ?></td>
+                                <td><?= htmlspecialchars($a['fecha']) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($auditorias)): ?>
+                            <tr>
+                                <td colspan="4" class="empty-state">No hay registros de auditoría todavía.</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
     <div id="modalModificarUsuario" class="modal">
         <div class="modal-contenido">
@@ -802,49 +839,6 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
 
 
 
-     <!-- MODULO AUDITORIA -->
-
-    <div class="moduloAuditoria">
-                <h3>Usuarios</h3>
-                <div class="tablaAuditoria">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Usuario</th>
-                                <th>Fecha</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <?php $contador = 1; ?>
-                        <?php foreach ($auditorias as $a): ?>
-                <tr class="filaAuditoria">
-                    <td><?= $contador++ ?></td>
-                    <td><?= htmlspecialchars($a['email'] ?? 'Desconocido') ?></td>
-                    <td><?= htmlspecialchars($a['fecha']) ?></td>
-                    <td class="acciones">
-                                    <button class="btn-accion btn-editar"
-                                            onclick="modificarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
-                                            title="Modificar">
-                                        <ion-icon name="create-outline"></ion-icon>
-                                    </button>
-                                    <button class="btn-accion btn-eliminar"
-                                            onclick="eliminarPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
-                                            title="Eliminar (baja lógica)">
-                                        <ion-icon name="trash-outline"></ion-icon>
-                                    </button>
-                                    <button class="btn-accion" style="background:#10B981;color:white;"
-                                            onclick="gestionarModulosPerfil(<?= (int) $p['id_perfil'] ?>, '<?= htmlspecialchars($p['tipo_perfil'], ENT_QUOTES) ?>')"
-                                            title="Gestionar módulos del perfil">
-                                        <ion-icon name="apps-outline"></ion-icon>
-                                    </button>
-                                </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-            </table>
-        </div>
-    </div>
 
 
 
