@@ -4,6 +4,8 @@ require_once dirname(__DIR__) . '/Usuarios/Usuario.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Usuarios/UsuarioService.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
+require_once dirname(__DIR__) . '/Core/ValidadorContrasenia.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php';
 
 class UsuarioController
 {
@@ -70,6 +72,11 @@ class UsuarioController
         // Contraseña (opcional)
         $hashContrasenia = null;
         if (!empty($_POST['contrasenia'])) {
+            $erroresPassword = ValidadorContrasenia::password($_POST['contrasenia']);
+            if (!empty($erroresPassword)) {
+                $this->alerta('warning', 'Ups', $erroresPassword[0]);
+                return;
+            }
             if (!$this->service->contrasenasCoinciden($_POST['contrasenia'], $_POST['confirmar_contrasenia'] ?? '')) {
                 $this->alerta('warning', 'Ups', 'Las contraseñas no coinciden.');
                 return;
@@ -94,6 +101,9 @@ class UsuarioController
         }
 
         $ok = $this->repo->modificar($idEditar, $idPersona, (int) $perfil['id_perfil'], $_POST, $hashContrasenia);
+        if ($ok) {
+            Auditoria::registrar(Database::getConexion(), $idLogueado, 'modificar_usuario', "id editado: $idEditar");
+        }
         $ok
             ? $this->alerta('success', '¡Éxito!', 'Usuario modificado correctamente.')
             : $this->alerta('error', 'Error', 'No se pudo modificar el usuario.');
@@ -107,6 +117,9 @@ class UsuarioController
             return;
         }
         $ok = $this->repo->darBajaLogica($dni);
+        if ($ok) {
+            Auditoria::registrar(Database::getConexion(), (int) $_SESSION['id_usuario'], 'baja_usuario', "dni: $dni");
+        }
         $ok
             ? $this->alerta('success', '¡Éxito!', 'Usuario eliminado correctamente.')
             : $this->alerta('warning', 'Ups', 'No se encontró una persona con ese DNI.');

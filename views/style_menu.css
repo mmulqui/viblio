@@ -338,52 +338,14 @@ table tr:hover {
 
 /* CSS DEL MÓDULO AUDITORIA de menu.php*/
 
-
-.moduloAuditoria {
-    background: white;
-    padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.moduloAuditoria h3 {
-    background: white;
-    padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-
-.tablaAuditoria {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    overflow-x: auto;
-}
-
-@media (max-width: 768px) {
-    .filaAuditoria {
+.filaAuditoria {
     transition: background-color 0.3s ease;
     position: relative;
-    }
 }
 
-
-.badge .badge-fechaInicio
-
-
-.badge .badge-no-disponible
-
-
-.accionesAuditoria
-
-
-.btn-accion .btn-editar
-
-
-
-
+.filaAuditoria:hover {
+    background-color: #f5f5f5;
+}
 
 
 @media (max-width: 768px) {

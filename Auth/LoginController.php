@@ -65,15 +65,8 @@ class LoginController
         $stmt->close();
 
         if (!$usuario) {
+            Auditoria::registrar($db, null, 'login_fallido', "email intentado: $email");
             $this->error('Email o contraseña incorrecto.');
-        }
-
-
-
-
-        if (!$usuario) {
-        Auditoria::registrar($db, null, 'login_fallido', "email intentado: $email");
-        $this->error('Email o contraseña incorrecto.');
         }
 
 
@@ -87,21 +80,14 @@ class LoginController
         }
 
         if (!password_verify($contrasenia, $hashGuardado)) {
+            Auditoria::registrar($db, (int) $usuario['id_usuario'], 'login_fallido', 'contraseña incorrecta');
             $this->error('Email o contraseña incorrecto.');
         }
-
-        $rol = $this->obtenerRol($db, (int) $usuario['id_usuario']);
-        $this->crearSesion($usuario, $rol);
-        $this->redirigirPorRol($rol);
-    
-
-
 
         $rol = $this->obtenerRol($db, (int) $usuario['id_usuario']);
         Auditoria::registrar($db, (int) $usuario['id_usuario'], 'login_exitoso');
         $this->crearSesion($usuario, $rol);
         $this->redirigirPorRol($rol);
-
         }
 
 
