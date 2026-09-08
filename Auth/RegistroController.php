@@ -255,8 +255,8 @@ class RegistroController
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'tatomulqui@gmail.com';
-        $mail->Password   = 'gqph sxda bwqq luti';
+        $mail->Username   = '';
+        $mail->Password   = '';
         $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         $mail->CharSet    = 'UTF-8';
