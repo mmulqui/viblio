@@ -63,13 +63,11 @@ class RegistroController
 
 
 
-        // NUEVO: validar formato de contraseña (solo si es registro público,
-        // porque el bibliotecario podría estar creando la cuenta con una temporal)
-        if ($esPublico) {
-            $erroresPassword = ValidadorContrasenia::password($_POST['contrasenia']);
+        // Validar formato de contraseña — se aplica siempre, tanto en registro
+        // público como cuando el bibliotecario crea un usuario desde el modal.
+        $erroresPassword = ValidadorContrasenia::password($_POST['contrasenia']);
         if (!empty($erroresPassword)) {
             $this->errorRegistro($esPublico, $erroresPassword[0]);
-             }
         }
 
 
