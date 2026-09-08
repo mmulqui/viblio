@@ -862,7 +862,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=3"></script>
     <script src="script_alertas.js"></script>
     <?php
         $usuarioActual = $usuarioRepo->obtenerPorId($id_usuario_logueado);
