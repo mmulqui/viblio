@@ -261,7 +261,7 @@ class RegistroController
         $mail->Port       = 587;
         $mail->CharSet    = 'UTF-8';
 
-        $mail->setFrom('tatomulqui@gmail.com', 'ViBlio');
+        $mail->setFrom('', 'ViBlio');
         $mail->addAddress($email, "$nombre $apellido");
         $mail->isHTML(true);
         $mail->Subject = 'Verificá tu cuenta en ViBlio';
