@@ -62,7 +62,7 @@ CREATE TABLE `auditoria` (
   PRIMARY KEY (`id_auditoria`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `auditoria_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +71,7 @@ CREATE TABLE `auditoria` (
 
 LOCK TABLES `auditoria` WRITE;
 /*!40000 ALTER TABLE `auditoria` DISABLE KEYS */;
-INSERT INTO `auditoria` VALUES (1,9,'login_exitoso','','::1','2026-09-04 22:59:18'),(2,9,'baja_usuario','dni: 46522893','::1','2026-09-05 00:43:56'),(3,9,'baja_usuario','dni: 40626704','::1','2026-09-05 00:44:32'),(4,NULL,'registro_usuario','email: facundoesquivel03@gmail.com','::1','2026-09-05 01:06:36'),(5,NULL,'registro_usuario','email: scdm0407@gmail.com','::1','2026-09-05 01:08:54'),(6,NULL,'registro_usuario','email: gg10exequiel@gmail.com','::1','2026-09-05 01:11:33'),(7,NULL,'registro_usuario','email: lub899176@gmail.com','::1','2026-09-05 01:13:47'),(8,NULL,'registro_usuario','email: marquitosk05@gmail.com','::1','2026-09-05 01:16:28'),(9,NULL,'registro_usuario','email: sosapatricio2025@gamil.com','::1','2026-09-05 01:18:53'),(10,NULL,'registro_usuario','email: miguelangelromero2o1553@gmail.com','::1','2026-09-05 01:21:32'),(11,9,'modificar_usuario','id editado: 25','::1','2026-09-05 01:24:06'),(12,9,'modificar_usuario','id editado: 27','::1','2026-09-05 01:24:17'),(13,9,'modificar_usuario','id editado: 28','::1','2026-09-05 01:24:36'),(14,9,'modificar_usuario','id editado: 29','::1','2026-09-05 01:25:55'),(15,9,'modificar_usuario','id editado: 30','::1','2026-09-05 01:26:02'),(16,9,'modificar_usuario','id editado: 31','::1','2026-09-05 01:26:11'),(17,9,'modificar_usuario','id editado: 32','::1','2026-09-05 01:26:21'),(18,9,'modificar_usuario','id editado: 33','::1','2026-09-05 01:26:33'),(19,NULL,'registro_usuario','email: lucidavis@gmail.com','::1','2026-09-05 01:30:04'),(20,NULL,'registro_usuario','email: tobiias398@gamil.com','::1','2026-09-05 01:31:23'),(21,NULL,'registro_usuario','email: sebalr4m@gmail.com','::1','2026-09-05 01:36:04'),(22,9,'modificar_usuario','id editado: 36','::1','2026-09-05 01:38:14'),(23,NULL,'registro_usuario','email: alexanderalarcon949@gmail.com','::1','2026-09-05 01:40:12');
+INSERT INTO `auditoria` VALUES (1,9,'login_exitoso','','::1','2026-09-04 22:59:18'),(2,9,'baja_usuario','dni: 46522893','::1','2026-09-05 00:43:56'),(3,9,'baja_usuario','dni: 40626704','::1','2026-09-05 00:44:32'),(4,NULL,'registro_usuario','email: facundoesquivel03@gmail.com','::1','2026-09-05 01:06:36'),(5,NULL,'registro_usuario','email: scdm0407@gmail.com','::1','2026-09-05 01:08:54'),(6,NULL,'registro_usuario','email: gg10exequiel@gmail.com','::1','2026-09-05 01:11:33'),(7,NULL,'registro_usuario','email: lub899176@gmail.com','::1','2026-09-05 01:13:47'),(8,NULL,'registro_usuario','email: marquitosk05@gmail.com','::1','2026-09-05 01:16:28'),(9,NULL,'registro_usuario','email: sosapatricio2025@gamil.com','::1','2026-09-05 01:18:53'),(10,NULL,'registro_usuario','email: miguelangelromero2o1553@gmail.com','::1','2026-09-05 01:21:32'),(11,9,'modificar_usuario','id editado: 25','::1','2026-09-05 01:24:06'),(12,9,'modificar_usuario','id editado: 27','::1','2026-09-05 01:24:17'),(13,9,'modificar_usuario','id editado: 28','::1','2026-09-05 01:24:36'),(14,9,'modificar_usuario','id editado: 29','::1','2026-09-05 01:25:55'),(15,9,'modificar_usuario','id editado: 30','::1','2026-09-05 01:26:02'),(16,9,'modificar_usuario','id editado: 31','::1','2026-09-05 01:26:11'),(17,9,'modificar_usuario','id editado: 32','::1','2026-09-05 01:26:21'),(18,9,'modificar_usuario','id editado: 33','::1','2026-09-05 01:26:33'),(19,NULL,'registro_usuario','email: lucidavis@gmail.com','::1','2026-09-05 01:30:04'),(20,NULL,'registro_usuario','email: tobiias398@gamil.com','::1','2026-09-05 01:31:23'),(21,NULL,'registro_usuario','email: sebalr4m@gmail.com','::1','2026-09-05 01:36:04'),(22,9,'modificar_usuario','id editado: 36','::1','2026-09-05 01:38:14'),(23,NULL,'registro_usuario','email: alexanderalarcon949@gmail.com','::1','2026-09-05 01:40:12'),(24,9,'login_exitoso','','::1','2026-09-09 00:29:42');
 /*!40000 ALTER TABLE `auditoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1229,4 +1229,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-08 17:12:46
+-- Dump completed on 2026-09-11 19:35:07
