@@ -12,6 +12,7 @@ $auditorias = (new AuditoriaRepository())->listarUltimos(50);
 
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
+require_once dirname(__DIR__) . '/Estadisticas/EstadisticaRepository.php';
 
 AuthGuard::verificarRol(['bibliotecario']);
 
@@ -22,6 +23,10 @@ $libroRepo    = new LibroRepository();
 $perfilRepo   = new PerfilRepository();
 $prestamoRepo = new PrestamoRepository();
 $reservaRepo  = new ReservaRepository();
+$estadisticaRepo = new EstadisticaRepository();
+
+// Dato para el gráfico del dashboard de estadísticas
+$datosEstadisticas = ['usuariosPorRol' => $estadisticaRepo->usuariosPorRol()];
 
 // Perfiles (para selects y tabla de roles)
 $perfiles = $perfilRepo->listarTodos();
@@ -57,6 +62,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <title>Menu de Gestion</title>
     <link rel="stylesheet" href="style_menu.css">
     <link rel="stylesheet" href="user_info.css">
+    <link rel="stylesheet" href="estadisticas.css">
 </head>
 <body>
     <div class="container">
@@ -76,6 +82,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 <li><a onclick="showtab('multas')"><ion-icon name="warning-outline"></ion-icon>Multas</a></li>
                 <li><a onclick="showtab('perfiles')"><ion-icon name="shield-outline"></ion-icon>Perfiles</a></li>
                  <li><a onclick="showtab('auditoria')"><ion-icon name="newspaper-outline"></ion-icon>Auditoria</a></li>
+                <li><a onclick="showtab('estadisticas')"><ion-icon name="stats-chart-outline"></ion-icon>Estadísticas</a></li>
                 <li><a href="#" onclick="mdConfirm('¿Cerrar sesión?', function(){ window.location.href='logout.php'; })"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
             </ul>
         </div>
@@ -685,6 +692,23 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             </div>
         </div>
 
+
+        <div id="estadisticas" class="tab_content">
+            <div class="encabezado">
+                <h2>Estadísticas</h2>
+            </div>
+            <div class="content">
+                <div class="grafico-unico">
+                    <div class="card">
+                        <h3>Usuarios por rol</h3>
+                        <div class="contenedor-grafico">
+                            <canvas id="graficoUsuariosRol" width="320" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <div id="modalModificarUsuario" class="modal">
         <div class="modal-contenido">
@@ -833,30 +857,6 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             </div>
         </div>
     </div>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
@@ -877,6 +877,39 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
         }
     </script>
     <script src="cacheUsuario.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const datosEstadisticas = <?= json_encode($datosEstadisticas) ?>;
+        let graficoUsuariosRol = null;
+
+        function renderizarEstadisticas() {
+            // Evitar duplicar el gráfico si se vuelve a entrar al tab
+            if (graficoUsuariosRol) {
+                graficoUsuariosRol.destroy();
+            }
+
+            graficoUsuariosRol = new Chart(document.getElementById('graficoUsuariosRol'), {
+                type: 'bar',
+                data: {
+                    labels: datosEstadisticas.usuariosPorRol.map(d => d.rol),
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: datosEstadisticas.usuariosPorRol.map(d => d.cantidad),
+                        backgroundColor: '#3F51B5'
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Si tu función showtab('estadisticas') no dispara un evento propio,
+        // renderizamos apenas carga la página (el tab_content puede estar oculto
+        // por CSS pero el canvas ya existe en el DOM).
+        document.addEventListener('DOMContentLoaded', renderizarEstadisticas);
+    </script>
     <?php if (isset($_SESSION['alerta'])): 
         $a = $_SESSION['alerta'];
         unset($_SESSION['alerta']);
