@@ -5,7 +5,7 @@ function showtab(tabId) {
     selected.style.display = 'block';
 }
         
-window.onload = () => showtab('usuario');
+window.onload = () => showtab('libros');
 
 function abrirModal(modalId) {
     document.getElementById(modalId).style.display = 'block';
