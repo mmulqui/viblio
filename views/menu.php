@@ -9,7 +9,6 @@ $auditorias = (new AuditoriaRepository())->listarUltimos(50);
 
 
 
-
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 require_once dirname(__DIR__) . '/Estadisticas/EstadisticaRepository.php';

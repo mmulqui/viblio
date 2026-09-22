@@ -273,7 +273,7 @@ class RegistroController
     }
 
     private function plantillaEmail(string $nombre, string $enlace): string
-    {
+    { /* SACAR EL HTML DEL AUTH Y PONERLO EN UNA VISTA */ 
         return <<<HTML
         <!DOCTYPE html>
         <html lang="es">
