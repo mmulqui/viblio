@@ -100,9 +100,20 @@ class UsuarioController
             return;
         }
 
+        // Datos ANTES del cambio, para poder comparar contra lo nuevo
+        $datosAntes = $this->repo->obtenerPorId($idEditar);
+
         $ok = $this->repo->modificar($idEditar, $idPersona, (int) $perfil['id_perfil'], $_POST, $hashContrasenia);
         if ($ok) {
-            Auditoria::registrar(Database::getConexion(), $idLogueado, 'modificar_usuario', "id editado: $idEditar");
+            $cambios     = $datosAntes
+                ? $this->service->compararCambios($datosAntes, $_POST, (bool) $hashContrasenia)
+                : '';
+            $emailEditar = $datosAntes['email'] ?? ($_POST['email'] ?? '');
+            $referencia  = "usuario id: $idEditar, email: $emailEditar";
+            $detalle = $cambios !== ''
+                ? "$cambios ($referencia)"
+                : "Sin cambios detectados ($referencia)";
+            Auditoria::registrar(Database::getConexion(), $idLogueado, 'Usuarios', 'modificar_usuario', $detalle);
         }
         $ok
             ? $this->alerta('success', '¡Éxito!', 'Usuario modificado correctamente.')
@@ -116,9 +127,11 @@ class UsuarioController
             $this->alerta('warning', 'Ups', 'DNI no proporcionado.');
             return;
         }
+        $datosUsuario = $this->repo->obtenerPorDni($dni);
         $ok = $this->repo->darBajaLogica($dni);
         if ($ok) {
-            Auditoria::registrar(Database::getConexion(), (int) $_SESSION['id_usuario'], 'baja_usuario', "dni: $dni");
+            $email = $datosUsuario['email'] ?? '';
+            Auditoria::registrar(Database::getConexion(), (int) $_SESSION['id_usuario'], 'Usuarios', 'baja_usuario', "dni: $dni, email: $email");
         }
         $ok
             ? $this->alerta('success', '¡Éxito!', 'Usuario eliminado correctamente.')

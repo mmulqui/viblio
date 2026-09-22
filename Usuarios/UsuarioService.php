@@ -51,4 +51,47 @@ class UsuarioService
     {
         return $pass === $confirmar;
     }
+
+    /**
+     * Compara los datos de un usuario ANTES de modificarlo contra lo que
+     * llegó en $_POST, y arma un string legible con los campos que
+     * efectivamente cambiaron, en formato "campo: valor_viejo -> valor_nuevo".
+     *
+     * Se usa para dejar registro detallado en la auditoría.
+     *
+     * @param array $datosAntes  fila devuelta por UsuarioRepository::obtenerPorId()
+     * @param array $post        $_POST del formulario de modificación
+     * @param bool  $cambioContrasenia  si se cambió la contraseña (no se comparan hashes)
+     */
+    public function compararCambios(array $datosAntes, array $post, bool $cambioContrasenia = false): string
+    {
+        // Mapea campo del formulario => campo de la fila de BD
+        $campos = [
+            'nombre'           => 'nombre',
+            'apellido'         => 'apellido',
+            'fecha_nacimiento' => 'fecha_nacimiento',
+            'dni'              => 'dni',
+            'email'            => 'email',
+            'rol'              => 'rol',
+        ];
+
+        $cambios = [];
+        foreach ($campos as $campoPost => $campoBD) {
+            if (!isset($post[$campoPost])) {
+                continue;
+            }
+            $valorAntes  = (string) ($datosAntes[$campoBD] ?? '');
+            $valorNuevo  = trim((string) $post[$campoPost]);
+
+            if ($valorAntes !== $valorNuevo) {
+                $cambios[] = "$campoPost: \"$valorAntes\" -> \"$valorNuevo\"";
+            }
+        }
+
+        if ($cambioContrasenia) {
+            $cambios[] = 'contraseña: (modificada)';
+        }
+
+        return implode('; ', $cambios);
+    }
 }

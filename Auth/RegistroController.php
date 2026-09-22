@@ -231,7 +231,7 @@ class RegistroController
 
 
         if ($stmt->execute()) {
-        Auditoria::registrar($db, null, 'registro_usuario', "email: " . $_POST['email']);
+        Auditoria::registrar($db, null, 'Usuarios', 'registro_usuario', "email: " . $_POST['email']);
          $_SESSION['alerta'] = ['tipo' => 'success', 'titulo' => '¡Éxito!', 'msg' => 'Usuario registrado correctamente.'];
         }
         /*if ($stmt->execute()) {

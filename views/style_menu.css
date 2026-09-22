@@ -7,27 +7,33 @@
 }
 
 body{
-    height: 100vh;
+    height: auto;
+    min-height: 100vh;
     font-family: "Istok Web", sans-serif;
     background: linear-gradient(135deg, #E5E5E5 60%, #86EFAC 100%);
     display: flex;
-    justify-content: start;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: stretch;
 }
 
+/* Menu lateral fijo: no se mueve al hacer scroll */
 .container{
     width: 170px;
     min-width: 170px;
-    height: 100%;
+    height: 100vh;
     background-color: #10B981;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 25px;
+    overflow-y: auto;
+    z-index: 100;
 }
-
-
 
 .titulo h1{
     color: white;
@@ -97,22 +103,15 @@ li:hover a{
 
 }
 
+/* El contenido se corre 170px para no quedar debajo del menu fijo */
 .main_content {
     flex: 1;
+    min-width: 0;
     min-height: 100vh;
+    margin-left: 170px;
+    width: calc(100% - 170px);
     background: linear-gradient(135deg, #E5E5E5 60%, #86EFAC 100%);
     padding: 30px;
-}
-
-.encabezado {
-    background: white;
-    padding: 25px 35px;
-    border-bottom: 1px solid #e1e1e1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-    position: relative;
-    width: 100%;
-    border-radius: 15px;
 }
 
 .encabezado h1 {
@@ -121,12 +120,13 @@ li:hover a{
   font-weight: 600;
 }
 
+/* La tabla scrollea en horizontal sin deformar la pagina */
 .tabla {
+    display: block;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
+    max-width: 100%;
     overflow-x: auto;
+    margin-top: 0;
 }
 
 table {
@@ -146,38 +146,12 @@ table th, table td {
     font-size: 13px;
 }
 
-table th {
-    background: #0C815F;
-    color: white;
-}
-
 table tr:nth-child(even) {
     background-color: #f7f7f7;
 }
 
 table tr:hover {
     background-color: #e8e8e8;
-}
-
-.btn-agregar {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    transition: all 0.3s;
-    position: absolute;
-    right: 20px;
-    top: 20px;
-}
-
-.btn-agregar:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
 }
 
 .modal {
@@ -462,35 +436,104 @@ input[readonly] {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+/* Titulo + boton Excel + buscador en una fila, dentro del flujo */
 .content {
     background: white;
-    padding: 15px;
+    padding: 20px;
     border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
 }
 
 .content h3 {
     color: #3F3F46;
-    margin-bottom: 20px;
+    margin: 0;
     font-size: 22px;
     position: relative;
+    flex: 1 1 auto;
 }
 
+.content .btn-excel,
+.content .box {
+    flex: 0 0 auto;
+}
+
+.content .tabla,
+.content .grafico-unico {
+    flex: 1 1 100%;
+    margin-top: 0;
+}
+
+/* Cards de la pestaña Estadísticas (gráficos) */
+.card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+}
+
+.card h3 {
+    color: #3F3F46;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px;
+}
+
+/* Grilla de 2 columnas para las cards de la pestaña Estadísticas */
+#estadisticas .grafico-unico {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#estadisticas .grafico-unico .card {
+    min-width: 0; /* evita que el canvas desborde la columna */
+}
+
+#estadisticas .contenedor-grafico {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#estadisticas .contenedor-grafico canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+@media (max-width: 900px) {
+    #estadisticas .grafico-unico {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Titulo del modulo siempre visible al hacer scroll */
 .encabezado {
     background: white;
     padding: 25px 35px;
     border: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 30px;
-    position: relative;
     width: 100%;
     border-radius: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
 }
 
 .encabezado h1 {
+    color: #3F3F46;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.encabezado h2 {
     color: #3F3F46;
     font-size: 1.8rem;
     font-weight: 600;
@@ -579,50 +622,6 @@ table tr:hover {
     position: relative;
 }
 
-
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .modal-contenido {
-        width: 95%;
-        padding: 20px;
-        max-width: 500px;
-    }
-    
-    .encabezado {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    
-    .btn-agregar {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    
-    .main_content {
-        padding: 15px;
-    }
-    
-    table {
-        font-size: 12px;
-    }
-    
-    table th, table td {
-        padding: 8px;
-    }
-}
-
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -697,37 +696,21 @@ table tr:hover {
     border: 1px solid #f5c6cb;
 }
 
-
-
-
-
-.box .carritoBoton button {
-    background: #10B981;
-    border: none;
-    color: white;
-    padding: 5px 5px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: 0.2s ease;
-    right: 380px;
-    position: absolute;
-}
-
-
-
+/* Buscador dentro del flujo: ya no tapa los titulos */
 .box {
     display: flex;
     align-items: center;
     background: #ffffff;
     border-radius: 30px;
-    padding: 5px 12px;
-    width: 280px;
+    padding: 4px 10px;
+    width: auto;
+    max-width: 360px;
     border: 2px solid #0d9469;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: 0.3s ease;
-    position: absolute;
-    top: 180px;
-    right: 50px;
+    position: static;
+    top: auto;
+    right: auto;
 }
 
 .box:hover {
@@ -735,25 +718,40 @@ table tr:hover {
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
+.box form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
 .box input {
     border: none;
     outline: none;
     background: transparent;
-    width: 250px;
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 120px;
     font-size: 15px;
 }
 
-.box button {
+.box button,
+.box .carritoBoton button,
+.box button[name="todos"],
+.box button[name="todos_usuarios"],
+.box button[name="todos_prestamos"],
+.box button[name="todos_reservas"] {
     background: #10B981;
     border: none;
     color: white;
-    padding: 5px 5px;
+    padding: 6px 10px;
     cursor: pointer;
     border-radius: 20px;
     transition: 0.2s ease;
-    position: absolute;
-    right: 1px;
-    top: 2px;
+    position: static;
+    top: auto;
+    right: auto;
+    white-space: nowrap;
 }
 
 .box button:hover {
@@ -762,20 +760,6 @@ table tr:hover {
 
 .box ion-icon {
     font-size: 16px;
-}
-
-.box button[name="todos"]{
-    position: absolute;
-    right: 300px;
-    top: 1px;
-    padding: 10px;
-}
-
-.box button[name="todos_usuarios"]{
-    position: absolute;
-    right: 300px;
-    top: 1px;
-    padding: 10px;
 }
 
 .select-estado {
@@ -813,3 +797,92 @@ tr:hover .btn-accion {
     opacity: 1;
     transform: scale(1);
 }
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-contenido {
+        width: 95%;
+        padding: 20px;
+        max-width: 500px;
+    }
+
+    .encabezado {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+        position: static;
+    }
+
+    .btn-agregar {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .box {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        flex-direction: column;
+    }
+
+    .container {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        padding-top: 15px;
+    }
+
+    .main_content {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+}
+
+
+/* ============================================================
+   OPCIONAL: encabezado de la tabla (thead) fijo al hacer scroll.
+   Descomentar solo si lo queres. Quita el redondeado de la tabla,
+   porque el overflow:hidden que redondea las esquinas rompe el sticky.
+   ============================================================ */
+/*
+.tabla {
+    overflow-x: visible;
+}
+
+table {
+    overflow: visible;
+    border-radius: 0;
+}
+
+table thead th {
+    position: sticky;
+    top: 90px;
+    z-index: 5;
+}
+*/

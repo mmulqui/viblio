@@ -26,7 +26,7 @@ $reservaRepo  = new ReservaRepository();
 $estadisticaRepo = new EstadisticaRepository();
 
 // Dato para el gráfico del dashboard de estadísticas
-$datosEstadisticas = ['usuariosPorRol' => $estadisticaRepo->usuariosPorRol()];
+$datosEstadisticas = $estadisticaRepo->obtenerTodo();
 
 // Perfiles (para selects y tabla de roles)
 $perfiles = $perfilRepo->listarTodos();
@@ -667,7 +667,9 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             <tr>
                                 <th>#</th>
                                 <th>Usuario</th>
+                                <th>Módulo</th>
                                 <th>Acción</th>
+                                <th>Detalle</th>
                                 <th>Fecha</th>
                             </tr>
                         </thead>
@@ -677,13 +679,15 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             <tr class="filaAuditoria">
                                 <td><?= $contador++ ?></td>
                                 <td><?= htmlspecialchars($a['email'] ?? 'Sistema') ?></td>
+                                <td><?= htmlspecialchars($a['modulo'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($a['accion']) ?></td>
+                                <td><?= nl2br(htmlspecialchars($a['detalle'] ?? '')) ?></td>
                                 <td><?= htmlspecialchars($a['fecha']) ?></td>
                             </tr>
                             <?php endforeach; ?>
                             <?php if (empty($auditorias)): ?>
                             <tr>
-                                <td colspan="4" class="empty-state">No hay registros de auditoría todavía.</td>
+                                <td colspan="6" class="empty-state">No hay registros de auditoría todavía.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -703,6 +707,30 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         <h3>Usuarios por rol</h3>
                         <div class="contenedor-grafico">
                             <canvas id="graficoUsuariosRol" width="320" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Préstamos por estado</h3>
+                        <div class="contenedor-grafico">
+                            <canvas id="graficoPrestamosPorEstado" width="320" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Préstamos por mes (últimos 6 meses)</h3>
+                        <div class="contenedor-grafico">
+                            <canvas id="graficoPrestamosPorMes" width="320" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Libros más prestados</h3>
+                        <div class="contenedor-grafico">
+                            <canvas id="graficoTopLibros" width="320" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Reservas por estado</h3>
+                        <div class="contenedor-grafico">
+                            <canvas id="graficoReservasPorEstado" width="320" height="180"></canvas>
                         </div>
                     </div>
                 </div>
@@ -880,13 +908,16 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const datosEstadisticas = <?= json_encode($datosEstadisticas) ?>;
-        let graficoUsuariosRol = null;
+        let graficoUsuariosRol       = null;
+        let graficoPrestamosPorEstado = null;
+        let graficoPrestamosPorMes    = null;
+        let graficoTopLibros          = null;
+        let graficoReservasPorEstado  = null;
 
         function renderizarEstadisticas() {
-            // Evitar duplicar el gráfico si se vuelve a entrar al tab
-            if (graficoUsuariosRol) {
-                graficoUsuariosRol.destroy();
-            }
+            // Evitar duplicar los gráficos si se vuelve a entrar al tab
+            [graficoUsuariosRol, graficoPrestamosPorEstado, graficoPrestamosPorMes, graficoTopLibros, graficoReservasPorEstado]
+                .forEach(g => g && g.destroy());
 
             graficoUsuariosRol = new Chart(document.getElementById('graficoUsuariosRol'), {
                 type: 'bar',
@@ -903,11 +934,71 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                     plugins: { legend: { display: false } }
                 }
             });
-        }
 
-        // Si tu función showtab('estadisticas') no dispara un evento propio,
-        // renderizamos apenas carga la página (el tab_content puede estar oculto
-        // por CSS pero el canvas ya existe en el DOM).
+            graficoPrestamosPorEstado = new Chart(document.getElementById('graficoPrestamosPorEstado'), {
+                type: 'doughnut',
+                data: {
+                    labels: datosEstadisticas.prestamosPorEstado.map(d => d.estado),
+                    datasets: [{
+                        data: datosEstadisticas.prestamosPorEstado.map(d => d.cantidad),
+                        backgroundColor: ['#3F51B5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+                    }]
+                },
+                options: {
+                    responsive: false
+                }
+            });
+
+            graficoPrestamosPorMes = new Chart(document.getElementById('graficoPrestamosPorMes'), {
+                type: 'line',
+                data: {
+                    labels: datosEstadisticas.prestamosPorMes.map(d => d.mes),
+                    datasets: [{
+                        label: 'Préstamos',
+                        data: datosEstadisticas.prestamosPorMes.map(d => d.cantidad),
+                        borderColor: '#3F51B5',
+                        backgroundColor: 'rgba(63, 81, 181, 0.2)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            graficoTopLibros = new Chart(document.getElementById('graficoTopLibros'), {
+                type: 'bar',
+                data: {
+                    labels: datosEstadisticas.topLibros.map(d => d.titulo),
+                    datasets: [{
+                        label: 'Veces prestado',
+                        data: datosEstadisticas.topLibros.map(d => d.cantidad),
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            graficoReservasPorEstado = new Chart(document.getElementById('graficoReservasPorEstado'), {
+                type: 'doughnut',
+                data: {
+                    labels: datosEstadisticas.reservasPorEstado.map(d => d.estado),
+                    datasets: [{
+                        data: datosEstadisticas.reservasPorEstado.map(d => d.cantidad),
+                        backgroundColor: ['#F59E0B', '#3F51B5', '#10B981', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: false
+                }
+            });
+        }
         document.addEventListener('DOMContentLoaded', renderizarEstadisticas);
     </script>
     <?php if (isset($_SESSION['alerta'])): 

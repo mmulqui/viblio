@@ -18,7 +18,7 @@ class AuditoriaRepository
     public function listarUltimos(int $limite = 50): array
     {
         $stmt = $this->db->prepare(
-            "SELECT a.accion, a.fecha, u.email
+            "SELECT a.modulo, a.accion, a.detalle, a.fecha, u.email
              FROM auditoria a
              LEFT JOIN usuario u ON u.id_usuario = a.id_usuario
              ORDER BY a.fecha DESC
