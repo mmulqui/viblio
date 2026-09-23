@@ -253,15 +253,15 @@ class RegistroController
 
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = MAIL_HOST;
         $mail->SMTPAuth   = true;
-        $mail->Username   = '';
-        $mail->Password   = '';
+        $mail->Username   = MAIL_USER;
+        $mail->Password   = MAIL_PASS;
         $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Port       = MAIL_PORT;
         $mail->CharSet    = 'UTF-8';
 
-        $mail->setFrom('', 'ViBlio');
+        $mail->setFrom(MAIL_USER, 'ViBlio');
         $mail->addAddress($email, "$nombre $apellido");
         $mail->isHTML(true);
         $mail->Subject = 'Verificá tu cuenta en ViBlio';
