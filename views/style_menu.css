@@ -676,6 +676,35 @@ table tr:hover {
     box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 
+.btn-pdf {
+    background-color: #EF4444;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
+}
+
+.btn-pdf:hover {
+    background-color: #C62F2F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+}
+
+.botones-exportar-estadisticas {
+    display: flex;
+    gap: 10px;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+}
+
 .badge {
     padding: 5px 12px;
     border-radius: 20px;

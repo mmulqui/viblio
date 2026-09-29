@@ -9,6 +9,7 @@ $auditorias = (new AuditoriaRepository())->listarUltimos(50);
 
 
 
+
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 require_once dirname(__DIR__) . '/Estadisticas/EstadisticaRepository.php';
@@ -701,6 +702,12 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 <h2>Estadísticas</h2>
             </div>
             <div class="content">
+                <div class="botones-exportar-estadisticas">
+                    <button class="btn-excel" onclick="window.location.href='../controlers/exportar_estadisticas_excel.php'">
+                        <ion-icon name="reader-outline"></ion-icon>Exportar a Excel</button>
+                    <button class="btn-pdf" onclick="exportarEstadisticasPDF()">
+                        <ion-icon name="document-outline"></ion-icon>Exportar a PDF</button>
+                </div>
                 <div class="grafico-unico">
                     <div class="card">
                         <h3>Usuarios por rol</h3>
@@ -905,6 +912,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     </script>
     <script src="cacheUsuario.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const datosEstadisticas = <?= json_encode($datosEstadisticas) ?>;
         let graficoUsuariosRol       = null;
@@ -999,6 +1007,49 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             });
         }
         document.addEventListener('DOMContentLoaded', renderizarEstadisticas);
+
+        // ─── Exportar a PDF (imagen de cada gráfico) ───────────────────────────
+        function exportarEstadisticasPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+
+            const graficos = [
+                { id: 'graficoUsuariosRol',        titulo: 'Usuarios por rol' },
+                { id: 'graficoPrestamosPorEstado', titulo: 'Préstamos por estado' },
+                { id: 'graficoPrestamosPorMes',    titulo: 'Préstamos por mes' },
+                { id: 'graficoTopLibros',          titulo: 'Libros más prestados' },
+                { id: 'graficoReservasPorEstado',  titulo: 'Reservas por estado' }
+            ];
+
+            const margen = 40;
+            const anchoImg = 300;
+            let y = margen;
+
+            doc.setFontSize(16);
+            doc.text('Estadísticas — ViBlio', margen, y);
+            y += 30;
+
+            graficos.forEach(g => {
+                const canvas = document.getElementById(g.id);
+                if (!canvas) return;
+
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const altoImg = (canvas.height / canvas.width) * anchoImg;
+
+                if (y + altoImg + 30 > doc.internal.pageSize.getHeight() - margen) {
+                    doc.addPage();
+                    y = margen;
+                }
+
+                doc.setFontSize(12);
+                doc.text(g.titulo, margen, y);
+                y += 12;
+                doc.addImage(imgData, 'PNG', margen, y, anchoImg, altoImg);
+                y += altoImg + 30;
+            });
+
+            doc.save('estadisticas_viblio.pdf');
+        }
     </script>
     <?php if (isset($_SESSION['alerta'])): 
         $a = $_SESSION['alerta'];
