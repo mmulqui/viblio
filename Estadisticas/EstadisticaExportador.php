@@ -18,25 +18,48 @@ class EstadisticaExportador
 {
     private Spreadsheet $libro;
 
+    /** Config de cada gráfico: clave => [titulo, campo etiqueta, tipo de gráfico]. */
+    private const CONFIG_GRAFICOS = [
+        'usuariosPorRol'     => ['titulo' => 'Usuarios por rol',     'etiqueta' => 'rol',    'tipo' => DataSeries::TYPE_BARCHART],
+        'prestamosPorEstado' => ['titulo' => 'Prestamos por estado', 'etiqueta' => 'estado', 'tipo' => DataSeries::TYPE_PIECHART],
+        'prestamosPorMes'    => ['titulo' => 'Prestamos por mes',    'etiqueta' => 'mes',    'tipo' => DataSeries::TYPE_LINECHART],
+        'topLibros'          => ['titulo' => 'Libros mas prestados', 'etiqueta' => 'titulo', 'tipo' => DataSeries::TYPE_BARCHART],
+        'reservasPorEstado'  => ['titulo' => 'Reservas por estado',  'etiqueta' => 'estado', 'tipo' => DataSeries::TYPE_PIECHART],
+    ];
+
     public function __construct()
     {
         $this->libro = new Spreadsheet();
         $this->libro->removeSheetByIndex(0); // sacamos la hoja en blanco default
     }
 
-    /** Genera el archivo completo y lo manda al navegador para descargar. */
-    public function generarYDescargar(array $datos): void
+    /**
+     * Genera el archivo y lo manda al navegador para descargar.
+     *
+     * @param string|null $soloClave  si se pasa una clave de CONFIG_GRAFICOS, el
+     *                                archivo trae solo ese gráfico; si es null, trae los 5.
+     */
+    public function generarYDescargar(array $datos, ?string $soloClave = null): void
     {
-        $this->agregarHoja('Usuarios por rol',      $datos['usuariosPorRol']     ?? [], 'rol',    'cantidad', DataSeries::TYPE_BARCHART);
-        $this->agregarHoja('Prestamos por estado',  $datos['prestamosPorEstado'] ?? [], 'estado', 'cantidad', DataSeries::TYPE_PIECHART);
-        $this->agregarHoja('Prestamos por mes',     $datos['prestamosPorMes']    ?? [], 'mes',    'cantidad', DataSeries::TYPE_LINECHART);
-        $this->agregarHoja('Libros mas prestados',  $datos['topLibros']          ?? [], 'titulo', 'cantidad', DataSeries::TYPE_BARCHART);
-        $this->agregarHoja('Reservas por estado',   $datos['reservasPorEstado']  ?? [], 'estado', 'cantidad', DataSeries::TYPE_PIECHART);
+        $claves = $soloClave !== null
+            ? [$soloClave => self::CONFIG_GRAFICOS[$soloClave] ?? null]
+            : self::CONFIG_GRAFICOS;
+
+        foreach ($claves as $clave => $config) {
+            if ($config === null) {
+                continue; // clave inválida, se ignora
+            }
+            $this->agregarHoja($config['titulo'], $datos[$clave] ?? [], $config['etiqueta'], 'cantidad', $config['tipo']);
+        }
 
         $this->libro->setActiveSheetIndex(0);
 
+        $nombreArchivo = $soloClave !== null
+            ? $soloClave . '.xlsx'
+            : 'estadisticas_viblio.xlsx';
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="estadisticas_viblio.xlsx"');
+        header('Content-Disposition: attachment;filename="' . $nombreArchivo . '"');
         header('Cache-Control: max-age=0');
 
         $writer = new Xlsx($this->libro);

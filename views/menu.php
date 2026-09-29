@@ -710,31 +710,61 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 </div>
                 <div class="grafico-unico">
                     <div class="card">
-                        <h3>Usuarios por rol</h3>
+                        <div class="card-header-grafico">
+                            <h3>Usuarios por rol</h3>
+                            <div class="botones-grafico-individual">
+                                <button class="btn-mini-excel" title="Exportar a Excel" onclick="exportarUnGraficoExcel('usuariosPorRol')"><ion-icon name="reader-outline"></ion-icon></button>
+                                <button class="btn-mini-pdf" title="Exportar a PDF" onclick="exportarUnGraficoPDF('usuariosPorRol')"><ion-icon name="document-outline"></ion-icon></button>
+                            </div>
+                        </div>
                         <div class="contenedor-grafico">
                             <canvas id="graficoUsuariosRol" width="320" height="180"></canvas>
                         </div>
                     </div>
                     <div class="card">
-                        <h3>Préstamos por estado</h3>
+                        <div class="card-header-grafico">
+                            <h3>Préstamos por estado</h3>
+                            <div class="botones-grafico-individual">
+                                <button class="btn-mini-excel" title="Exportar a Excel" onclick="exportarUnGraficoExcel('prestamosPorEstado')"><ion-icon name="reader-outline"></ion-icon></button>
+                                <button class="btn-mini-pdf" title="Exportar a PDF" onclick="exportarUnGraficoPDF('prestamosPorEstado')"><ion-icon name="document-outline"></ion-icon></button>
+                            </div>
+                        </div>
                         <div class="contenedor-grafico">
                             <canvas id="graficoPrestamosPorEstado" width="320" height="180"></canvas>
                         </div>
                     </div>
                     <div class="card">
-                        <h3>Préstamos por mes (últimos 6 meses)</h3>
+                        <div class="card-header-grafico">
+                            <h3>Préstamos por mes (últimos 6 meses)</h3>
+                            <div class="botones-grafico-individual">
+                                <button class="btn-mini-excel" title="Exportar a Excel" onclick="exportarUnGraficoExcel('prestamosPorMes')"><ion-icon name="reader-outline"></ion-icon></button>
+                                <button class="btn-mini-pdf" title="Exportar a PDF" onclick="exportarUnGraficoPDF('prestamosPorMes')"><ion-icon name="document-outline"></ion-icon></button>
+                            </div>
+                        </div>
                         <div class="contenedor-grafico">
                             <canvas id="graficoPrestamosPorMes" width="320" height="180"></canvas>
                         </div>
                     </div>
                     <div class="card">
-                        <h3>Libros más prestados</h3>
+                        <div class="card-header-grafico">
+                            <h3>Libros más prestados</h3>
+                            <div class="botones-grafico-individual">
+                                <button class="btn-mini-excel" title="Exportar a Excel" onclick="exportarUnGraficoExcel('topLibros')"><ion-icon name="reader-outline"></ion-icon></button>
+                                <button class="btn-mini-pdf" title="Exportar a PDF" onclick="exportarUnGraficoPDF('topLibros')"><ion-icon name="document-outline"></ion-icon></button>
+                            </div>
+                        </div>
                         <div class="contenedor-grafico">
                             <canvas id="graficoTopLibros" width="320" height="180"></canvas>
                         </div>
                     </div>
                     <div class="card">
-                        <h3>Reservas por estado</h3>
+                        <div class="card-header-grafico">
+                            <h3>Reservas por estado</h3>
+                            <div class="botones-grafico-individual">
+                                <button class="btn-mini-excel" title="Exportar a Excel" onclick="exportarUnGraficoExcel('reservasPorEstado')"><ion-icon name="reader-outline"></ion-icon></button>
+                                <button class="btn-mini-pdf" title="Exportar a PDF" onclick="exportarUnGraficoPDF('reservasPorEstado')"><ion-icon name="document-outline"></ion-icon></button>
+                            </div>
+                        </div>
                         <div class="contenedor-grafico">
                             <canvas id="graficoReservasPorEstado" width="320" height="180"></canvas>
                         </div>
@@ -1009,17 +1039,18 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
         document.addEventListener('DOMContentLoaded', renderizarEstadisticas);
 
         // ─── Exportar a PDF (imagen de cada gráfico) ───────────────────────────
-        function exportarEstadisticasPDF() {
+        const TODOS_LOS_GRAFICOS = [
+            { id: 'graficoUsuariosRol',        titulo: 'Usuarios por rol',       clave: 'usuariosPorRol' },
+            { id: 'graficoPrestamosPorEstado', titulo: 'Préstamos por estado',   clave: 'prestamosPorEstado' },
+            { id: 'graficoPrestamosPorMes',    titulo: 'Préstamos por mes',      clave: 'prestamosPorMes' },
+            { id: 'graficoTopLibros',          titulo: 'Libros más prestados',   clave: 'topLibros' },
+            { id: 'graficoReservasPorEstado',  titulo: 'Reservas por estado',    clave: 'reservasPorEstado' }
+        ];
+
+        /** Arma un PDF con la lista de gráficos que se le pase (uno o varios). */
+        function generarPDFGraficos(graficos, nombreArchivo) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-
-            const graficos = [
-                { id: 'graficoUsuariosRol',        titulo: 'Usuarios por rol' },
-                { id: 'graficoPrestamosPorEstado', titulo: 'Préstamos por estado' },
-                { id: 'graficoPrestamosPorMes',    titulo: 'Préstamos por mes' },
-                { id: 'graficoTopLibros',          titulo: 'Libros más prestados' },
-                { id: 'graficoReservasPorEstado',  titulo: 'Reservas por estado' }
-            ];
 
             const margen = 40;
             const anchoImg = 300;
@@ -1048,7 +1079,23 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 y += altoImg + 30;
             });
 
-            doc.save('estadisticas_viblio.pdf');
+            doc.save(nombreArchivo);
+        }
+
+        function exportarEstadisticasPDF() {
+            generarPDFGraficos(TODOS_LOS_GRAFICOS, 'estadisticas_viblio.pdf');
+        }
+
+        /** Exporta un solo gráfico a PDF, por su clave (ej: 'usuariosPorRol'). */
+        function exportarUnGraficoPDF(clave) {
+            const g = TODOS_LOS_GRAFICOS.find(x => x.clave === clave);
+            if (!g) return;
+            generarPDFGraficos([g], clave + '.pdf');
+        }
+
+        /** Exporta un solo gráfico a Excel (con gráfico nativo), por su clave. */
+        function exportarUnGraficoExcel(clave) {
+            window.location.href = '../controlers/exportar_estadisticas_excel.php?grafico=' + encodeURIComponent(clave);
         }
     </script>
     <?php if (isset($_SESSION['alerta'])): 

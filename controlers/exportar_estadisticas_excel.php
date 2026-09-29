@@ -5,5 +5,7 @@ require_once dirname(__DIR__) . '/Estadisticas/EstadisticaExportador.php';
 
 AuthGuard::verificarRol(['bibliotecario']);
 
+$soloGrafico = $_GET['grafico'] ?? null;
+
 $datos = (new EstadisticaRepository())->obtenerTodo();
-(new EstadisticaExportador())->generarYDescargar($datos);
+(new EstadisticaExportador())->generarYDescargar($datos, $soloGrafico);

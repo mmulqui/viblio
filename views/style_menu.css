@@ -705,6 +705,53 @@ table tr:hover {
     margin-bottom: 5px;
 }
 
+.card-header-grafico {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-header-grafico h3 {
+    margin: 0;
+}
+
+.botones-grafico-individual {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-mini-excel,
+.btn-mini-pdf {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: white;
+    transition: all 0.2s;
+}
+
+.btn-mini-excel {
+    background-color: #10B981;
+}
+
+.btn-mini-excel:hover {
+    background-color: #0C815F;
+}
+
+.btn-mini-pdf {
+    background-color: #EF4444;
+}
+
+.btn-mini-pdf:hover {
+    background-color: #C62F2F;
+}
+
 .badge {
     padding: 5px 12px;
     border-radius: 20px;
