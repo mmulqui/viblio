@@ -27,6 +27,11 @@ class LibroController
             }
         }
 
+        if (!isset($_POST['stock']) || !ctype_digit((string) $_POST['stock'])) {
+            $this->alerta('warning', 'Ups', 'Ingresá un stock válido (0 o más).');
+            return;
+        }
+
         $ok = $this->repo->registrar($_POST);
         $ok
             ? $this->alerta('success', '¡Éxito!', 'Libro agregado correctamente.')
@@ -37,6 +42,11 @@ class LibroController
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirigir();
+        }
+
+        if (!isset($_POST['stock']) || !ctype_digit((string) $_POST['stock'])) {
+            $this->alerta('warning', 'Ups', 'Ingresá un stock válido (0 o más).');
+            return;
         }
 
         $ok = $this->repo->modificar($_POST);
@@ -70,29 +80,6 @@ class LibroController
         echo json_encode($libro
             ? ['success' => true,  'libro'   => $libro]
             : ['success' => false, 'message' => 'Libro no encontrado']
-        );
-    }
-
-    public function cambiarEstado(): void
-    {
-        header('Content-Type: application/json');
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-            return;
-        }
-
-        $isbn   = $_POST['isbn']   ?? '';
-        $estado = $_POST['estado'] ?? '';
-
-        if (!$isbn || $estado === '') {
-            echo json_encode(['success' => false, 'message' => 'Faltan parámetros']);
-            return;
-        }
-
-        $ok = $this->repo->cambiarEstado($isbn, (int) $estado);
-        echo json_encode($ok
-            ? ['success' => true,  'message' => 'Estado actualizado correctamente']
-            : ['success' => false, 'message' => 'No se pudo actualizar el estado']
         );
     }
 

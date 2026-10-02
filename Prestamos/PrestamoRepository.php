@@ -120,7 +120,7 @@ class PrestamoRepository
     }
 
     /**
-     * Crea un préstamo nuevo, validando disponibilidad y límite DENTRO de una
+     * Crea un préstamo nuevo, validando stock y límite DENTRO de una
      * transacción con bloqueo de fila (FOR UPDATE), para que dos pedidos
      * simultáneos del mismo libro no pasen la validación al mismo tiempo.
      *
@@ -130,34 +130,25 @@ class PrestamoRepository
     {
         $this->db->begin_transaction();
         try {
-            // Bloquea la fila del libro: cualquier otro pedido sobre este mismo
-            // libro tiene que esperar a que esta transacción termine (commit o rollback).
-            $stmt = $this->db->prepare("SELECT id_libro FROM libro WHERE id_libro = ? FOR UPDATE");
+            // Bloquea la fila del libro y lee su stock: cualquier otro pedido sobre este
+            // mismo libro tiene que esperar a que esta transacción termine (commit o rollback).
+            $stmt = $this->db->prepare("SELECT stock FROM libro WHERE id_libro = ? FOR UPDATE");
             $stmt->bind_param('i', $idLibro);
             $stmt->execute();
-            $stmt->store_result();
-            $existeLibro = $stmt->num_rows > 0;
+            $fila = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-            if (!$existeLibro) {
+            if (!$fila) {
                 $this->db->rollback();
                 return ['ok' => false, 'error' => 'El libro no existe.', 'id_prestamo' => null];
             }
 
             $estadoActivo = self::ESTADO_ACTIVO;
 
-            // Con la fila del libro ya bloqueada, esta lectura es segura: nadie más
-            // puede insertar un préstamo activo para este libro mientras esperamos.
-            $stmt = $this->db->prepare(
-                "SELECT id_prestamo FROM prestamo WHERE id_libro = ? AND id_estado = ? FOR UPDATE"
-            );
-            $stmt->bind_param('ii', $idLibro, $estadoActivo);
-            $stmt->execute();
-            $stmt->store_result();
-            $yaPrestado = $stmt->num_rows > 0;
-            $stmt->close();
-            if ($yaPrestado) {
+            // Con la fila bloqueada esta lectura es segura. El descuento del stock lo hace
+            // el trigger prestamo_ai al insertar el préstamo (y la devolución lo repone).
+            if ((int) $fila['stock'] < 1) {
                 $this->db->rollback();
-                return ['ok' => false, 'error' => 'Ese libro ya está prestado.', 'id_prestamo' => null];
+                return ['ok' => false, 'error' => 'No hay stock disponible de ese libro.', 'id_prestamo' => null];
             }
 
             // Bloquea también la fila del usuario, para que dos préstamos simultáneos

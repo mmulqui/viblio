@@ -14,7 +14,7 @@ class LibroRepository
     private function sqlBase(): string
     {
         return "SELECT l.id_libro, l.isbn, l.titulo, l.edicion,
-                       l.anio_publicacion, l.estado,
+                       l.anio_publicacion, l.estado, l.stock,
                        a.nombre  AS autor,
                        ed.nombre AS editorial,
                        c.nombre  AS categoria,
@@ -94,13 +94,15 @@ class LibroRepository
     public function registrar(array $datos): bool
     {
         $stmt = $this->db->prepare(
-            "CALL registrar_libro(?, ?, ?, ?, 1, ?, ?, ?, ?)"
+            "CALL registrar_libro(?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param('ssssssss',
+        $stock = max(0, (int) ($datos['stock'] ?? 0));
+        $stmt->bind_param('ssssissss',
             $datos['titulo'],
             $datos['edicion'],
             $datos['anio'],
             $datos['isbn'],
+            $stock,
             $datos['autor'],
             $datos['editorial'],
             $datos['categoria'],
@@ -116,13 +118,15 @@ class LibroRepository
     public function modificar(array $datos): bool
     {
         $stmt = $this->db->prepare(
-            "CALL modificar_libro(?, ?, ?, ?, 1, ?, ?, ?, ?)"
+            "CALL modificar_libro(?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param('ssssssss',
+        $stock = max(0, (int) ($datos['stock'] ?? 0));
+        $stmt->bind_param('ssssissss',
             $datos['isbn'],
             $datos['titulo'],
             $datos['edicion'],
             $datos['anio'],
+            $stock,
             $datos['autor'],
             $datos['editorial'],
             $datos['categoria'],
@@ -170,12 +174,25 @@ class LibroRepository
         }
     }
 
-    /** Cambia el estado (disponible/no disponible) de un libro. */
-    public function cambiarEstado(string $isbn, int $estado): bool
+    /**
+     * Resta 1 al stock de un libro. Devuelve false si no hay stock.
+     * La condición "stock > 0" evita que dos préstamos simultáneos se lleven el último ejemplar.
+     */
+    public function descontarStock(int $idLibro): bool
     {
-        if (!in_array($estado, [0, 1], true)) return false;
-        $stmt = $this->db->prepare("UPDATE libro SET estado = ? WHERE isbn = ?");
-        $stmt->bind_param('is', $estado, $isbn);
+        $stmt = $this->db->prepare("UPDATE libro SET stock = stock - 1 WHERE id_libro = ? AND stock > 0");
+        $stmt->bind_param('i', $idLibro);
+        $stmt->execute();
+        $ok = $stmt->affected_rows === 1;
+        $stmt->close();
+        return $ok;
+    }
+
+    /** Suma 1 al stock de un libro (por ejemplo, al devolverlo). */
+    public function sumarStock(int $idLibro): bool
+    {
+        $stmt = $this->db->prepare("UPDATE libro SET stock = stock + 1 WHERE id_libro = ?");
+        $stmt->bind_param('i', $idLibro);
         $ok = $stmt->execute();
         $stmt->close();
         return $ok;

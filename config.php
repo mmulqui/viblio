@@ -5,14 +5,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// Iniciar sesión de forma segura si aún no está activa
+// Iniciar sesión si aún no está activa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-}
-
-// Inicializar el carrito si no existe en la sesión
-if (!isset($_SESSION['carrito'])) {
-    $_SESSION['carrito'] = [];
 }
 
 // Configuración de la base de datos

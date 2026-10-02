@@ -237,6 +237,11 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                                 <label>Año:</label>
                                 <input type="number" name="anio" placeholder="2024" required>
                             </div>
+
+                            <div class="form-group">
+                                <label>Stock:</label>
+                                <input type="number" name="stock" value="1" min="0" required>
+                            </div>
                             
                             <div class="form-group">
                                 <label>Autor:</label>
@@ -290,7 +295,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                                 <th>Categoria</th>
                                 <th>Genero</th>
                                 <th>Año</th>
-                                <th>Estado</th>
+                                <th>Stock</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -306,10 +311,11 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                                 <td><?= htmlspecialchars($fila["genero"]) ?></td>
                                 <td><?= htmlspecialchars((string) $fila["anio_publicacion"]) ?></td>
                                 <td>
-                                    <select class="select-estado" onchange="cambiarEstado('<?= htmlspecialchars($fila['isbn']) ?>', this.value)">
-                                        <option value="1" <?= ($fila["estado"] == 1) ? 'selected' : ''; ?>>✓ Disponible</option>
-                                        <option value="0" <?= ($fila["estado"] == 0) ? 'selected' : ''; ?>>✗ No disponible</option>
-                                    </select>
+                                    <?php $stockLibro = (int) $fila["stock"]; ?>
+                                    <?= $stockLibro ?>
+                                    <?php if ($stockLibro === 0): ?>
+                                        <span style="color:#721c24;font-size:12px;">(No disponible)</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="acciones">
                                     <button class="btn-modificar" onclick="modificarLibro('<?= htmlspecialchars($fila['isbn']) ?>')" title="modificar">
@@ -864,6 +870,11 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                     <div class="form-group">
                         <label>Año:</label>
                         <input type="number" id="mod_anio" name="anio" placeholder="2024" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Stock:</label>
+                        <input type="number" id="mod_stock" name="stock" min="0" required>
                     </div>
                     
                     <div class="form-group">
