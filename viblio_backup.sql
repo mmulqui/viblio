@@ -63,7 +63,7 @@ CREATE TABLE `auditoria` (
   PRIMARY KEY (`id_auditoria`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `auditoria_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `auditoria` (
 
 LOCK TABLES `auditoria` WRITE;
 /*!40000 ALTER TABLE `auditoria` DISABLE KEYS */;
-INSERT INTO `auditoria` VALUES (1,9,'Sistema','login_exitoso','','::1','2026-09-04 06:39:05'),(2,9,'Sistema','login_exitoso','','::1','2026-09-04 20:20:20'),(3,NULL,'Sistema','registro_usuario','email: a@gmail.com','::1','2026-09-04 20:21:35'),(4,9,'Sistema','baja_usuario','dni: 40400400','::1','2026-09-04 20:22:03'),(5,9,'Sistema','modificar_usuario','id editado: 20','::1','2026-09-04 20:23:39'),(6,20,'Sistema','login_exitoso','','::1','2026-09-04 20:31:46'),(7,20,'Sistema','login_exitoso','','::1','2026-09-04 21:17:54'),(8,9,'Sistema','login_exitoso','','::1','2026-09-04 23:15:28'),(9,9,'Sistema','login_exitoso','','::1','2026-09-12 02:07:10'),(10,9,'Sistema','login_exitoso','','::1','2026-09-14 02:15:24'),(11,9,'Sistema','login_exitoso','','::1','2026-09-14 03:09:06'),(12,9,'Sistema','login_exitoso','','::1','2026-09-15 23:03:31'),(13,9,'Sistema','login_exitoso','','::1','2026-09-16 00:28:05'),(14,9,'Sistema','login_exitoso','','::1','2026-09-16 00:46:32'),(15,NULL,'Sistema','registro_usuario','email: prueba@gmail.com','::1','2026-09-16 01:30:07'),(16,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:30:23'),(17,26,'Sistema','login_exitoso','','::1','2026-09-16 01:30:56'),(18,9,'Sistema','login_exitoso','','::1','2026-09-16 01:32:46'),(19,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:33:08'),(20,9,'Autenticación','login_exitoso','','::1','2026-09-17 06:45:15'),(21,9,'Usuarios','modificar_usuario','rol: \"profesor\" -> \"alumno\" (usuario id: 19)','::1','2026-09-17 06:45:44'),(22,9,'Autenticación','login_exitoso','','::1','2026-09-17 22:33:51'),(23,9,'Autenticación','login_exitoso','','::1','2026-09-18 01:51:38'),(24,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 01:51:46'),(25,9,'Autenticación','login_exitoso','','::1','2026-09-18 07:05:35'),(26,9,'Autenticación','login_exitoso','','::1','2026-09-18 22:29:34'),(27,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-09-18 22:45:03'),(28,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 22:45:17'),(29,9,'Usuarios','modificar_usuario','nombre: \"prueba\" -> \"Juan\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-18 22:45:33'),(30,9,'Autenticación','login_exitoso','','::1','2026-09-19 00:28:23'),(31,9,'Autenticación','login_exitoso','','::1','2026-09-19 01:12:35'),(32,9,'Usuarios','modificar_usuario','apellido: \"asd\" -> \"Perez\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-19 01:24:56'),(33,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:34:50'),(34,NULL,'Usuarios','registro_usuario','email: script@gmail.com','::1','2026-09-19 03:40:15'),(35,9,'Usuarios','modificar_usuario','Sin cambios detectados (usuario id: 27, email: script@gmail.com)','::1','2026-09-19 03:43:38'),(36,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-19 03:55:38'),(37,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:55:46');
+INSERT INTO `auditoria` VALUES (1,9,'Sistema','login_exitoso','','::1','2026-09-04 06:39:05'),(2,9,'Sistema','login_exitoso','','::1','2026-09-04 20:20:20'),(3,NULL,'Sistema','registro_usuario','email: a@gmail.com','::1','2026-09-04 20:21:35'),(4,9,'Sistema','baja_usuario','dni: 40400400','::1','2026-09-04 20:22:03'),(5,9,'Sistema','modificar_usuario','id editado: 20','::1','2026-09-04 20:23:39'),(6,20,'Sistema','login_exitoso','','::1','2026-09-04 20:31:46'),(7,20,'Sistema','login_exitoso','','::1','2026-09-04 21:17:54'),(8,9,'Sistema','login_exitoso','','::1','2026-09-04 23:15:28'),(9,9,'Sistema','login_exitoso','','::1','2026-09-12 02:07:10'),(10,9,'Sistema','login_exitoso','','::1','2026-09-14 02:15:24'),(11,9,'Sistema','login_exitoso','','::1','2026-09-14 03:09:06'),(12,9,'Sistema','login_exitoso','','::1','2026-09-15 23:03:31'),(13,9,'Sistema','login_exitoso','','::1','2026-09-16 00:28:05'),(14,9,'Sistema','login_exitoso','','::1','2026-09-16 00:46:32'),(15,NULL,'Sistema','registro_usuario','email: prueba@gmail.com','::1','2026-09-16 01:30:07'),(16,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:30:23'),(17,26,'Sistema','login_exitoso','','::1','2026-09-16 01:30:56'),(18,9,'Sistema','login_exitoso','','::1','2026-09-16 01:32:46'),(19,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:33:08'),(20,9,'Autenticación','login_exitoso','','::1','2026-09-17 06:45:15'),(21,9,'Usuarios','modificar_usuario','rol: \"profesor\" -> \"alumno\" (usuario id: 19)','::1','2026-09-17 06:45:44'),(22,9,'Autenticación','login_exitoso','','::1','2026-09-17 22:33:51'),(23,9,'Autenticación','login_exitoso','','::1','2026-09-18 01:51:38'),(24,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 01:51:46'),(25,9,'Autenticación','login_exitoso','','::1','2026-09-18 07:05:35'),(26,9,'Autenticación','login_exitoso','','::1','2026-09-18 22:29:34'),(27,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-09-18 22:45:03'),(28,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 22:45:17'),(29,9,'Usuarios','modificar_usuario','nombre: \"prueba\" -> \"Juan\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-18 22:45:33'),(30,9,'Autenticación','login_exitoso','','::1','2026-09-19 00:28:23'),(31,9,'Autenticación','login_exitoso','','::1','2026-09-19 01:12:35'),(32,9,'Usuarios','modificar_usuario','apellido: \"asd\" -> \"Perez\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-19 01:24:56'),(33,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:34:50'),(34,NULL,'Usuarios','registro_usuario','email: script@gmail.com','::1','2026-09-19 03:40:15'),(35,9,'Usuarios','modificar_usuario','Sin cambios detectados (usuario id: 27, email: script@gmail.com)','::1','2026-09-19 03:43:38'),(36,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-19 03:55:38'),(37,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:55:46'),(38,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-29 04:32:22'),(39,9,'Autenticación','login_exitoso','','::1','2026-09-29 04:32:30'),(40,9,'Autenticación','login_exitoso','','::1','2026-09-29 23:24:03'),(41,9,'Autenticación','login_exitoso','','::1','2026-09-30 00:27:17'),(42,9,'Autenticación','login_exitoso','','::1','2026-09-30 02:33:48'),(43,9,'Autenticación','login_exitoso','','::1','2026-10-01 03:56:15'),(44,9,'Autenticación','login_exitoso','','::1','2026-10-01 04:08:48'),(45,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-10-01 04:11:11'),(46,20,'Autenticación','login_exitoso','','::1','2026-10-01 04:11:36'),(47,9,'Autenticación','login_exitoso','','::1','2026-10-02 23:42:08');
 /*!40000 ALTER TABLE `auditoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -350,6 +350,7 @@ CREATE TABLE `libro` (
   `titulo` varchar(100) NOT NULL,
   `edicion` varchar(100) NOT NULL,
   `anio_publicacion` smallint NOT NULL,
+  `stock` int unsigned NOT NULL DEFAULT '1',
   `isbn` varchar(17) NOT NULL,
   `estado` tinyint NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = activo, 0 = eliminado (borrado logico)',
@@ -364,9 +365,43 @@ CREATE TABLE `libro` (
 
 LOCK TABLES `libro` WRITE;
 /*!40000 ALTER TABLE `libro` DISABLE KEYS */;
-INSERT INTO `libro` VALUES (2,'Harry Potter y la piedra filosofal','1ra edición',1997,'978074753',1,1),(3,'1984','1ra edición',1949,'978045',1,1),(8,'Clean Code','1ra edición',2008,'9780132350884',1,1),(9,'The Pragmatic Programmer','2da edicion',2019,'9780135957059',1,1),(10,'Code Complete','2da edicion',2004,'9780735619678',1,1),(11,'Fahrenheit 451','Edición 60.º aniversario',1953,'9781451673319',1,1),(12,'The Little Prince','Edición de bolsillo',1943,'9780156012195',1,1),(13,'Sapiens','1ra edición',2015,'9780062316097',1,1);
+INSERT INTO `libro` VALUES (2,'Harry Potter y la piedra filosofal','1ra edición',1997,3,'978074753',1,1),(3,'1984','1ra edición',1949,1,'978045',1,1),(8,'Clean Code','1ra edición',2008,1,'9780132350884',1,1),(9,'The Pragmatic Programmer','2da edicion',2019,1,'9780135957059',1,1),(10,'Code Complete','2da edicion',2004,1,'9780735619678',1,1),(11,'Fahrenheit 451','Edición 60.º aniversario',1953,1,'9781451673319',1,1),(12,'The Little Prince','Edición de bolsillo',1943,1,'9780156012195',1,1),(13,'Sapiens','1ra edición',2015,1,'9780062316097',1,1);
 /*!40000 ALTER TABLE `libro` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `libro_bi` BEFORE INSERT ON `libro` FOR EACH ROW BEGIN
+    SET NEW.estado = IF(NEW.stock > 0, 1, 0);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `libro_bu` BEFORE UPDATE ON `libro` FOR EACH ROW BEGIN
+    SET NEW.estado = IF(NEW.stock > 0, 1, 0);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `modulos_config`
@@ -665,9 +700,67 @@ CREATE TABLE `prestamo` (
 
 LOCK TABLES `prestamo` WRITE;
 /*!40000 ALTER TABLE `prestamo` DISABLE KEYS */;
-INSERT INTO `prestamo` VALUES (1,507233,'2026-08-30 21:26:36','2026-09-06 21:26:36','2026-08-30 21:26:44',2,2,24),(2,615022,'2026-09-18 17:46:33','2026-09-25 17:46:33',NULL,11,1,24),(3,360971,'2026-09-18 17:46:48','2026-09-25 17:46:48',NULL,13,1,19),(4,691428,'2026-09-18 17:47:25','2026-09-25 17:47:25',NULL,2,1,20);
+INSERT INTO `prestamo` VALUES (1,507233,'2026-08-30 21:26:36','2026-09-06 21:26:36','2026-08-30 21:26:44',2,2,24),(2,615022,'2026-09-18 17:46:33','2026-09-25 17:46:33','2026-10-02 18:42:49',11,2,24),(3,360971,'2026-09-18 17:46:48','2026-09-25 17:46:48','2026-10-02 18:42:43',13,2,19),(4,691428,'2026-09-18 17:47:25','2026-09-25 17:47:25','2026-10-02 18:42:24',2,2,20);
 /*!40000 ALTER TABLE `prestamo` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `prestamo_bi` BEFORE INSERT ON `prestamo` FOR EACH ROW BEGIN
+    DECLARE v_stock INT;
+    SELECT stock INTO v_stock FROM libro WHERE id_libro = NEW.id_libro FOR UPDATE;
+    IF v_stock IS NULL OR v_stock < 1 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El libro no tiene stock disponible';
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `prestamo_ai` AFTER INSERT ON `prestamo` FOR EACH ROW BEGIN
+    UPDATE libro SET stock = stock - 1 WHERE id_libro = NEW.id_libro;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `prestamo_au` AFTER UPDATE ON `prestamo` FOR EACH ROW BEGIN
+    -- activo (1) o vencido (3) -> devuelto (2): vuelve el ejemplar
+    IF OLD.id_estado IN (1, 3) AND NEW.id_estado = 2 THEN
+        UPDATE libro SET stock = stock + 1 WHERE id_libro = NEW.id_libro;
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `profesor`
@@ -939,7 +1032,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,2,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0),(19,'jonasalejandrovera123@hotmail.com','$2y$12$pam4oMm145EDrBWcLzSsQeFgNbAMyfIwPmvXhClBYXiVkOzZTQfgW',NULL,1,21,1),(20,'salmasanchez@hotmail.com','$2y$12$rUOtKp2uzSXSJsnex5osWOzN9ijmKj0V2svUGkvgGMT0elH6Qokqu',NULL,1,22,1),(21,'denisgomez@hotmail.com','$2y$12$hHZQfwT3nWpbPrE8zFfAd.7WG2AY.l39.Tm4JzzicQL6S2z1g7nW.',NULL,3,23,1),(22,'rodrigogaona@hotmail.com','$2y$12$pvc0MIqVkw.oc5viAMpE7.wzmdtpubBfDwXu7c.87CSzntv78vFTi',NULL,1,24,0),(23,'mariavaldez@gmail.com','$2y$12$RphA3KsBXO4fp1diArKAuOQ2XW1.zox7DDwQuWYBkVQCuZMXKavIa',NULL,2,25,0),(24,'mulquidaiara@gmail.com','$2y$12$HqmU1rJjP2Xt3PFiC49X6e9A8Ve1NwFpeA40IybdTwR4qLRUYUzlC',NULL,1,26,1),(25,'a@gmail.com','$2y$12$flVf5IgMXAL/3Ni/PDj5W.Ylparia3dTY92N48ly5LwL1MmZP7qvG',NULL,1,27,0),(26,'prueba@gmail.com','$2y$12$haDsEm0m3HQ4vg2yiC3rquwxFWK35YdKeKtNr5lPCYrTYVtNR3uz2',NULL,2,28,1),(27,'script@gmail.com','$2y$12$MXhm69O2FR0HQ0ME0cDsMuxzLD2sWMY80Ya9lLvBBCMPC/4oflrDe',NULL,1,29,1);
+INSERT INTO `usuario` VALUES (9,'miguelmulqui@hotmail.com','$2y$12$OhR4MySC5aEsVcj6papj0.6Mkg8DsvDfYixQnL4UCufVAok696bzG',NULL,2,10,1),(18,'bbb@hotmail.com','$2y$12$kjdxkX7Xv7OH5hQGEHYsNOHmvsKEHuVmuuKfdWu2u12JGIJiGCZVu',NULL,1,20,0),(19,'jonasalejandrovera123@hotmail.com','$2y$12$pam4oMm145EDrBWcLzSsQeFgNbAMyfIwPmvXhClBYXiVkOzZTQfgW',NULL,1,21,1),(20,'salmasanchez@hotmail.com','$2y$12$rUOtKp2uzSXSJsnex5osWOzN9ijmKj0V2svUGkvgGMT0elH6Qokqu',NULL,2,22,1),(21,'denisgomez@hotmail.com','$2y$12$hHZQfwT3nWpbPrE8zFfAd.7WG2AY.l39.Tm4JzzicQL6S2z1g7nW.',NULL,3,23,1),(22,'rodrigogaona@hotmail.com','$2y$12$pvc0MIqVkw.oc5viAMpE7.wzmdtpubBfDwXu7c.87CSzntv78vFTi',NULL,1,24,0),(23,'mariavaldez@gmail.com','$2y$12$RphA3KsBXO4fp1diArKAuOQ2XW1.zox7DDwQuWYBkVQCuZMXKavIa',NULL,2,25,0),(24,'mulquidaiara@gmail.com','$2y$12$HqmU1rJjP2Xt3PFiC49X6e9A8Ve1NwFpeA40IybdTwR4qLRUYUzlC',NULL,1,26,1),(25,'a@gmail.com','$2y$12$flVf5IgMXAL/3Ni/PDj5W.Ylparia3dTY92N48ly5LwL1MmZP7qvG',NULL,1,27,0),(26,'prueba@gmail.com','$2y$12$haDsEm0m3HQ4vg2yiC3rquwxFWK35YdKeKtNr5lPCYrTYVtNR3uz2',NULL,2,28,1),(27,'script@gmail.com','$2y$12$MXhm69O2FR0HQ0ME0cDsMuxzLD2sWMY80Ya9lLvBBCMPC/4oflrDe',NULL,1,29,1);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -1008,7 +1101,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `modificar_libro`(
     IN p_titulo VARCHAR(100),
     IN p_edicion VARCHAR(100),
     IN p_anio_publicacion SMALLINT,
-    IN p_estado TINYINT(1),
+    IN p_stock INT,
     IN p_autor VARCHAR(50),
     IN p_editorial VARCHAR(50),
     IN p_categoria VARCHAR(50),
@@ -1021,10 +1114,8 @@ BEGIN
     DECLARE v_id_categoria INT;
     DECLARE v_id_genero INT;
 
-    -- Obtener libro
     SELECT id_libro INTO v_id_libro FROM libro WHERE isbn = p_isbn;
 
-    -- Obtener relaciones actuales
     SELECT id_autor INTO v_id_autor
     FROM rela_aut_lib WHERE id_libro = v_id_libro;
 
@@ -1034,20 +1125,18 @@ BEGIN
     SELECT id_categoria, id_genero INTO v_id_categoria, v_id_genero
     FROM rela_cat_lib_gen WHERE id_libro = v_id_libro;
 
-    -- Actualizar tablas relacionadas con los nuevos nombres
     UPDATE autor SET nombre = p_autor WHERE id_autor = v_id_autor;
     UPDATE editorial SET nombre = p_editorial WHERE id_editorial = v_id_editorial;
     UPDATE categoria SET nombre = p_categoria WHERE id_categoria = v_id_categoria;
     UPDATE genero SET nombre = p_genero WHERE id_genero = v_id_genero;
 
-    -- Actualizar libro
+    -- el trigger libro_bu recalcula "estado" a partir del stock
     UPDATE libro
     SET titulo = p_titulo,
         edicion = p_edicion,
         anio_publicacion = p_anio_publicacion,
-        estado = p_estado
+        stock = p_stock
     WHERE id_libro = v_id_libro;
-
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1176,7 +1265,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `registrar_libro`(
     IN p_edicion VARCHAR(100),
     IN p_anio_publicacion SMALLINT,
     IN p_isbn VARCHAR(20),
-    IN p_estado TINYINT(1),
+    IN p_stock INT,
     IN p_autor VARCHAR(50),
     IN p_editorial VARCHAR(50),
     IN p_categoria VARCHAR(50),
@@ -1184,27 +1273,21 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `registrar_libro`(
 )
 BEGIN
     START TRANSACTION;
-    -- 1) Insertar autor
     INSERT INTO autor(nombre) VALUES (p_autor);
     SET @id_autor = LAST_INSERT_ID();
-    -- 2) Insertar editorial
     INSERT INTO editorial(nombre) VALUES (p_editorial);
     SET @id_editorial = LAST_INSERT_ID();
-    -- 3) Insertar categoría
     INSERT INTO categoria(nombre) VALUES (p_categoria);
     SET @id_categoria = LAST_INSERT_ID();
-    -- 4) Insertar género
     INSERT INTO genero(nombre) VALUES (p_genero);
     SET @id_genero = LAST_INSERT_ID();
-    -- 5) Insertar libro (sin FK)
-    INSERT INTO libro(titulo, edicion, anio_publicacion, isbn, estado)
-    VALUES (p_titulo, p_edicion, p_anio_publicacion, p_isbn, p_estado);
+
+    INSERT INTO libro(titulo, edicion, anio_publicacion, isbn, stock, estado)
+    VALUES (p_titulo, p_edicion, p_anio_publicacion, p_isbn, p_stock, IF(p_stock > 0, 1, 0));
     SET @id_libro = LAST_INSERT_ID();
-    -- 6) RELACIONES
-    INSERT INTO rela_aut_lib(id_libro, id_autor)
-    VALUES (@id_libro, @id_autor);
-    INSERT INTO rela_edit_lib(id_libro, id_editorial)
-    VALUES (@id_libro, @id_editorial);
+
+    INSERT INTO rela_aut_lib(id_libro, id_autor) VALUES (@id_libro, @id_autor);
+    INSERT INTO rela_edit_lib(id_libro, id_editorial) VALUES (@id_libro, @id_editorial);
     INSERT INTO rela_cat_lib_gen(id_libro, id_categoria, id_genero)
     VALUES (@id_libro, @id_categoria, @id_genero);
     COMMIT;
@@ -1277,4 +1360,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-21 22:49:41
+-- Dump completed on 2026-10-02 19:27:07
