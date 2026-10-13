@@ -1,0 +1,105 @@
+/* Pestaña Ayuda
+   Paleta tomada de style_menu.css: verde del menú lateral, texto gris oscuro y tarjetas blancas.
+   Para cambiar los colores de la pestaña, editá solo estas variables. */
+#ayuda {
+    --ayuda-verde: #10B981;
+    --ayuda-verde-oscuro: #0C815F;
+    --ayuda-verde-suave: #ecfdf5;
+    --ayuda-texto: #3F3F46;
+    --ayuda-borde: #ddd;
+}
+
+/* .content es un flex con wrap: cada bloque ocupa todo el ancho */
+#ayuda .ayuda-reglas,
+#ayuda .ayuda-lista {
+    flex: 1 1 100%;
+}
+
+#ayuda .ayuda-reglas {
+    background: var(--ayuda-verde-suave);
+    border-left: 4px solid var(--ayuda-verde);
+    border-radius: 10px;
+    padding: 16px 20px;
+    color: var(--ayuda-texto);
+}
+
+#ayuda .ayuda-reglas h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+/* Los estilos globales de ul y li (menú lateral) se anulan acá */
+#ayuda .ayuda-reglas ul {
+    display: block;
+    width: auto;
+    padding: 0 0 0 20px;
+}
+
+#ayuda .ayuda-reglas li {
+    width: auto;
+    margin: 0;
+    padding: 3px 0;
+    list-style: disc;
+    cursor: default;
+    line-height: 1.5;
+}
+
+#ayuda .ayuda-reglas li:hover {
+    transform: none;
+    background: none;
+}
+
+#ayuda .ayuda-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#ayuda .ayuda-lista details {
+    background: white;
+    border: 1px solid var(--ayuda-borde);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#ayuda .ayuda-lista details[open] {
+    border-color: var(--ayuda-verde);
+}
+
+#ayuda .ayuda-lista summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--ayuda-texto);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#ayuda .ayuda-lista summary:hover,
+#ayuda .ayuda-lista details[open] summary {
+    background: var(--ayuda-verde-suave);
+}
+
+#ayuda .ayuda-lista summary:focus-visible {
+    outline: 2px solid var(--ayuda-verde-oscuro);
+    outline-offset: -2px;
+}
+
+#ayuda .ayuda-lista summary ion-icon {
+    margin-right: 0;
+    font-size: 20px;
+    color: var(--ayuda-verde);
+}
+
+#ayuda .ayuda-cuerpo {
+    padding: 4px 16px 14px 46px;
+    line-height: 1.6;
+    color: var(--ayuda-texto);
+    max-width: 70ch;
+}
+
+#ayuda .ayuda-cuerpo p {
+    margin: 8px 0 0;
+}

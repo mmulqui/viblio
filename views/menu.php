@@ -63,6 +63,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <link rel="stylesheet" href="style_menu.css">
     <link rel="stylesheet" href="user_info.css">
     <link rel="stylesheet" href="estadisticas.css">
+    <link rel="stylesheet" href="ayuda.css">
 </head>
 <body>
     <div class="container">
@@ -83,6 +84,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 <li><a onclick="showtab('perfiles')"><ion-icon name="shield-outline"></ion-icon>Perfiles</a></li>
                  <li><a onclick="showtab('auditoria')"><ion-icon name="newspaper-outline"></ion-icon>Auditoria</a></li>
                 <li><a onclick="showtab('estadisticas')"><ion-icon name="stats-chart-outline"></ion-icon>Estadísticas</a></li>
+                <li><a onclick="showtab('ayuda')"><ion-icon name="help-circle-outline"></ion-icon>Ayuda</a></li>
                 <li><a href="#" onclick="mdConfirm('¿Cerrar sesión?', function(){ window.location.href='logout.php'; })"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
             </ul>
         </div>
@@ -702,6 +704,8 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             </div>
         </div>
 
+
+        <?php include __DIR__ . '/ayuda.php'; ?>
 
         <div id="estadisticas" class="tab_content">
             <div class="encabezado">
