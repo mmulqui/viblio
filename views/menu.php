@@ -4,14 +4,31 @@ require_once dirname(__DIR__) . '/Usuarios/UsuarioRepository.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
 require_once __DIR__ . '/../Core/AuditoriaRepository.php';
+require_once __DIR__ . '/../Core/Paginator.php';
 
-$auditorias = (new AuditoriaRepository())->listarUltimos(50);
+// Auditoría (filtros por GET: módulo, texto, rango de fechas y cantidad de filas)
+$auditoriaRepo = new AuditoriaRepository();
+$aud_modulo    = trim($_GET['aud_modulo'] ?? '');
+$aud_texto     = trim($_GET['aud_texto'] ?? '');
+$aud_desde     = $_GET['aud_desde'] ?? '';
+$aud_hasta     = $_GET['aud_hasta'] ?? '';
+$aud_limite    = (int) ($_GET['aud_limite'] ?? 50);
+if (!in_array($aud_limite, [25, 50, 100, 200], true)) {
+    $aud_limite = 50;
+}
+$auditoriaFiltrada = isset($_GET['aud_filtrar']);
+$totalAuditoria    = $auditoriaRepo->contarFiltrado($aud_modulo, $aud_texto, $aud_desde, $aud_hasta);
+$pagAuditoria      = Paginator::desdeGet('pag_auditoria', 'auditoria', $totalAuditoria, $aud_limite);
+$auditorias        = $auditoriaRepo->listarFiltrado($aud_modulo, $aud_texto, $aud_desde, $aud_hasta, $aud_limite, $pagAuditoria->offset());
+$modulosAuditoria  = $auditoriaRepo->listarModulos();
 
 
 
 
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
+require_once dirname(__DIR__) . '/Multas/MultaRepository.php';
+require_once dirname(__DIR__) . '/Multas/MultaService.php';
 require_once dirname(__DIR__) . '/Estadisticas/EstadisticaRepository.php';
 
 AuthGuard::verificarRol(['bibliotecario']);
@@ -36,6 +53,13 @@ $busqueda     = $_GET["busqueda"] ?? "";
 $mostrartodos = isset($_GET["todos"]);
 $resultado    = $libroRepo->listar($busqueda, $mostrartodos);
 
+// Libros para el select de "Agregar stock": todos, sin importar la búsqueda de la tabla (una fila por libro)
+$librosParaStock = [];
+foreach ($libroRepo->listar('', true) as $l) {
+    $librosParaStock[$l['id_libro']] = $l;
+}
+uasort($librosParaStock, fn($a, $b) => strcasecmp($a['titulo'], $b['titulo']));
+
 // Usuarios (con búsqueda segura vía prepared statements)
 $busqueda_usuarios = $_GET["busqueda_usuarios"] ?? "";
 $todos_usuarios     = isset($_GET["todos_usuarios"]);
@@ -51,8 +75,39 @@ $busqueda_reservas = $_GET["busqueda_reservas"] ?? "";
 $todos_reservas     = isset($_GET["todos_reservas"]);
 $resultadoR         = $reservaRepo->listarTodos($busqueda_reservas, $todos_reservas);
 
-// Alumnos activos, para los selects de los modales de Agregar Prestamo/Reserva
-$alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno');
+// Multas (filtros: texto y estado de la sanción)
+$multaRepo       = new MultaRepository();
+$busqueda_multas = trim($_GET['busqueda_multas'] ?? '');
+$estado_multas   = $_GET['estado_multas'] ?? '';
+$resultadoM      = $multaRepo->listar($busqueda_multas, $estado_multas);
+
+// Usuarios activos (alumnos y profesores), para los selects de los modales de Agregar Prestamo/Reserva
+$usuariosDisponibles = array_filter($resultadoU, fn($u) => in_array($u['rol'], ['alumno', 'profesor'], true));
+
+// dni => rol, para mostrar el rol en la tabla de préstamos sin tocar el repository
+$rolPorDni = array_column($resultadoU, 'rol', 'dni');
+
+// Paginación de las tablas. Las listas completas ($resultado, $resultadoU, $perfiles) se
+// conservan para los selects de los modales; las tablas muestran solo la página actual.
+$pagUsuarios  = Paginator::desdeGet('pag_usuarios',  'usuario',   count($resultadoU));
+$pagLibros    = Paginator::desdeGet('pag_libros',    'libros',    count($resultado));
+$pagPrestamos = Paginator::desdeGet('pag_prestamos', 'prestamos', count($resultadoP));
+$pagReservas  = Paginator::desdeGet('pag_reservas',  'reservas',  count($resultadoR));
+$pagPerfiles  = Paginator::desdeGet('pag_perfiles',  'perfiles',  count($perfiles));
+$pagMultas    = Paginator::desdeGet('pag_multas',    'multas',    count($resultadoM));
+
+$usuariosPagina  = $pagUsuarios->slice($resultadoU);
+$librosPagina    = $pagLibros->slice($resultado);
+$prestamosPagina = $pagPrestamos->slice($resultadoP);
+$reservasPagina  = $pagReservas->slice($resultadoR);
+$perfilesPagina  = $pagPerfiles->slice($perfiles);
+$multasPagina    = $pagMultas->slice($resultadoM);
+
+// Pestaña a reabrir al recargar (paginación, búsquedas y filtro de auditoría)
+$tabsValidas = ['usuario', 'libros', 'prestamos', 'reservas', 'multas', 'perfiles', 'auditoria', 'estadisticas', 'ayuda'];
+$tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
+    ? $_GET['tab']
+    : (isset($_GET['aud_filtrar']) ? 'auditoria' : '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,6 +119,19 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <link rel="stylesheet" href="user_info.css">
     <link rel="stylesheet" href="estadisticas.css">
     <link rel="stylesheet" href="ayuda.css">
+    <style>
+        /* Paginación. Se neutralizan las reglas globales ul/li/a de style_menu.css (pensadas para el menú lateral). */
+        .paginacion { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; flex:1 1 100%; margin:12px 0; }
+        .paginacion-info { font-size:13px; color:#666; }
+        .paginacion ul { display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px; width:auto; margin:0; padding:0; list-style:none; }
+        .paginacion li { width:auto; margin:0; padding:0; border-radius:0; transition:none; cursor:default; }
+        .paginacion li:hover { transform:none; background:transparent; border-radius:0; }
+        .paginacion a, .paginacion li > span { display:inline-block; min-width:34px; padding:6px 10px; text-align:center; border-radius:8px; border:1px solid #0d9469; color:#0d9469; background:#fff; font-size:14px; text-transform:none; text-decoration:none; box-sizing:border-box; cursor:pointer; }
+        .paginacion li:hover a { transform:none; background:#10B981; color:#fff; }
+        .paginacion .activa > span { background:#0d9469; color:#fff; font-weight:bold; cursor:default; }
+        .paginacion .deshabilitado > span { opacity:.4; border-color:#ccc; color:#888; cursor:not-allowed; }
+        .paginacion li.puntos { color:#888; padding:6px 4px; }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -153,6 +221,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                     <ion-icon name="reader-outline"></ion-icon>Exportar a Excel</button>
                 <div class="box">
                     <form method="GET">
+                        <input type="hidden" name="tab" value="usuario">
                         <input type="text" name="busqueda_usuarios" placeholder="Buscar..." value="<?= htmlspecialchars($busqueda_usuarios) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos_usuarios">Todos</button>
@@ -174,7 +243,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($resultadoU as $fila): ?>
+                            <?php foreach ($usuariosPagina as $fila): ?>
                             <tr>
                                 <td><?= htmlspecialchars($fila["dni"]) ?></td>
                                 <td><?= htmlspecialchars($fila["nombre"]) ?></td>
@@ -205,14 +274,54 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         </tbody>
                     </table>
                 </div>
+                <?= $pagUsuarios->render() ?>
             </div>
         </div>
         <div id="libros" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Libros</h2>
-                <button onclick="abrirModal('modalAgregarLibro')" class="btn-agregar">
-                    <ion-icon name="add-circle-outline"></ion-icon> Agregar Libro
-                </button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button onclick="abrirAgregarStock()" class="btn-agregar">
+                        <ion-icon name="layers-outline"></ion-icon> Agregar Stock
+                    </button>
+                    <button onclick="abrirModal('modalAgregarLibro')" class="btn-agregar">
+                        <ion-icon name="add-circle-outline"></ion-icon> Agregar Libro
+                    </button>
+                </div>
+            </div>
+            <div id="modalAgregarStock" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalAgregarStock')">&times;</span>
+                    <h2>Agregar stock</h2>
+                    <form action="../controlers/agregar_stock.php" method="POST">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Libro:</label>
+                                <select name="id_libro" id="stock_id_libro" required onchange="actualizarVistaStock()">
+                                    <option value="">Seleccionar libro...</option>
+                                    <?php foreach ($librosParaStock as $l): ?>
+                                    <option value="<?= (int) $l['id_libro'] ?>" data-stock="<?= (int) $l['stock'] ?>">
+                                        <?= htmlspecialchars($l['titulo'] . ' (ISBN ' . $l['isbn'] . ') - stock actual: ' . (int) $l['stock']) ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Stock nuevo (ejemplares que ingresan):</label>
+                                <input type="number" name="cantidad" id="stock_cantidad" value="1" min="1" max="<?= (int) LibroRepository::MAX_STOCK_POR_CARGA ?>" required oninput="actualizarVistaStock()">
+                            </div>
+                            <div class="form-group">
+                                <label>Procedencia / comentario (opcional):</label>
+                                <textarea name="procedencia" id="stock_procedencia" maxlength="255" rows="3" placeholder="Ej.: donación de la Biblioteca Popular, compra a Editorial X, remito 123..."></textarea>
+                            </div>
+                        </div>
+                        <p id="stock_vista" style="margin:10px 0 0;font-size:13px;color:#0d9469;"></p>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Agregar stock</button>
+                            <button type="button" onclick="cerrarModal('modalAgregarStock')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             <div id="modalAgregarLibro" class="modal">
                 <div class="modal-contenido">
@@ -280,6 +389,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 </button>
                 <div class="box">
                     <form method="GET">
+                        <input type="hidden" name="tab" value="libros">
                         <input type="text" name="busqueda" placeholder="Buscar..." value="<?= htmlspecialchars($busqueda) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos">Todos</button>
@@ -302,7 +412,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($resultado as $fila): ?>
+                            <?php foreach ($librosPagina as $fila): ?>
                             <tr>
                                 <td><?= htmlspecialchars($fila["isbn"]) ?></td>
                                 <td><?= htmlspecialchars($fila["titulo"]) ?></td>
@@ -332,6 +442,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         </tbody>
                     </table>
                 </div>
+                <?= $pagLibros->render() ?>
             </div>
         </div>
 
@@ -345,6 +456,37 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                     <ion-icon name="add-circle-outline"></ion-icon> Registrar Prestamo
                 </button>
             </div>
+            <div id="modalDevolucion" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal('modalDevolucion')">&times;</span>
+                    <h2>Registrar devolución</h2>
+                    <form action="../controlers/procesar_prestamo.php" method="POST">
+                        <input type="hidden" name="accion" value="devolver">
+                        <input type="hidden" name="id_prestamo" id="dev_id_prestamo" value="">
+                        <p id="dev_resumen" style="margin:0 0 12px;font-size:14px;"></p>
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label>Estado del libro:</label>
+                                <select name="estado_libro" id="dev_estado_libro" onchange="actualizarAvisoDevolucion()">
+                                    <option value="bueno">Buen estado</option>
+                                    <?php foreach (MultaService::DIAS_POR_DANIO as $estadoDanio => $diasDanio): ?>
+                                    <option value="<?= htmlspecialchars($estadoDanio) ?>"><?= htmlspecialchars(ucfirst($estadoDanio)) ?> (sanción de <?= (int) $diasDanio ?> días)</option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Observaciones (opcional):</label>
+                                <textarea name="observaciones" id="dev_observaciones" maxlength="500" rows="3" placeholder="Ej.: páginas arrancadas, tapa despegada..."></textarea>
+                            </div>
+                        </div>
+                        <p id="dev_aviso" style="margin:10px 0 0;font-size:13px;"></p>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn-guardar">Registrar devolución</button>
+                            <button type="button" onclick="cerrarModal('modalDevolucion')" class="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <div id="modalAgregarPrestamo" class="modal">
                 <div class="modal-contenido">
                     <span class="cerrar" onclick="cerrarModal('modalAgregarPrestamo')">&times;</span>
@@ -353,15 +495,16 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         <input type="hidden" name="accion" value="registrar">
                         <div class="form-grid" style="grid-template-columns: 1fr;">
                             <div class="form-group">
-                                <label>Alumno:</label>
+                                <label>Usuario:</label>
                                 <select name="id_usuario" required>
-                                    <option value="">Seleccionar alumno...</option>
-                                    <?php foreach ($alumnosDisponibles as $a): ?>
+                                    <option value="">Seleccionar usuario...</option>
+                                    <?php foreach ($usuariosDisponibles as $a): ?>
                                     <option value="<?= (int) $a['id_usuario'] ?>">
-                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (DNI ' . $a['dni'] . ')') ?>
+                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (' . $a['rol'] . ' - DNI ' . $a['dni'] . ')') ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small style="color:#888;font-size:11px;">Alumnos: máximo <?= PrestamoRepository::LIMITE_PRESTAMOS_ALUMNO ?> préstamos simultáneos. Profesores: sin límite.</small>
                             </div>
                             <div class="form-group">
                                 <label>Libro:</label>
@@ -388,7 +531,8 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 <h3>Prestamos</h3>
                 <div class="box">
                     <form method="GET">
-                        <input type="text" name="busqueda_prestamos" placeholder="Buscar por libro, alumno o DNI..." value="<?= htmlspecialchars($busqueda_prestamos) ?>">
+                        <input type="hidden" name="tab" value="prestamos">
+                        <input type="text" name="busqueda_prestamos" placeholder="Buscar por libro, usuario o DNI..." value="<?= htmlspecialchars($busqueda_prestamos) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos_prestamos">Todos</button>
                     </form>
@@ -399,7 +543,8 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             <tr>
                                 <th>Código</th>
                                 <th>Libro</th>
-                                <th>Alumno</th>
+                                <th>Usuario</th>
+                                <th>Rol</th>
                                 <th>DNI</th>
                                 <th>Fecha Prestamo</th>
                                 <th>Vencimiento</th>
@@ -409,25 +554,27 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($resultadoP as $p): ?>
+                            <?php foreach ($prestamosPagina as $p): ?>
                             <tr>
                                 <td><?= htmlspecialchars((string) $p['codigo_prestamo']) ?></td>
                                 <td><?= htmlspecialchars($p['titulo']) ?></td>
                                 <td><?= htmlspecialchars($p['nombre'] . ' ' . $p['apellido']) ?></td>
+                                <td><?= htmlspecialchars($rolPorDni[$p['dni']] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($p['dni']) ?></td>
                                 <td><?= htmlspecialchars($p['fecha_prestamo']) ?></td>
                                 <td><?= htmlspecialchars($p['fecha_vencimieto']) ?></td>
                                 <td><?= $p['fecha_devolucion'] ? htmlspecialchars($p['fecha_devolucion']) : '-' ?></td>
                                 <td><?= htmlspecialchars($p['estado_descripcion']) ?></td>
                                 <td class="acciones">
-                                    <?php if ($p['estado_descripcion'] === 'activo'): ?>
-                                    <form action="../controlers/procesar_prestamo.php" method="POST" style="display:inline;">
-                                        <input type="hidden" name="accion" value="devolver">
-                                        <input type="hidden" name="id_prestamo" value="<?= (int) $p['id_prestamo'] ?>">
-                                        <button type="submit" class="btn-modificar" title="Registrar devolución">
-                                            <ion-icon name="checkmark-done-outline"></ion-icon>
-                                        </button>
-                                    </form>
+                                    <?php if (in_array($p['estado_descripcion'], ['activo', 'vencido'], true)): ?>
+                                    <button type="button" class="btn-modificar" title="Registrar devolución"
+                                        data-id="<?= (int) $p['id_prestamo'] ?>"
+                                        data-libro="<?= htmlspecialchars($p['titulo']) ?>"
+                                        data-usuario="<?= htmlspecialchars($p['nombre'] . ' ' . $p['apellido']) ?>"
+                                        data-vence="<?= htmlspecialchars(substr((string) $p['fecha_vencimieto'], 0, 10)) ?>"
+                                        onclick="abrirDevolucion(this)">
+                                        <ion-icon name="checkmark-done-outline"></ion-icon>
+                                    </button>
                                     <?php else: ?>
                                         <span>-</span>
                                     <?php endif; ?>
@@ -437,6 +584,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         </tbody>
                     </table>
                 </div>
+                <?= $pagPrestamos->render() ?>
             </div>
         </div>
 
@@ -458,12 +606,12 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         <input type="hidden" name="accion" value="registrar">
                         <div class="form-grid" style="grid-template-columns: 1fr;">
                             <div class="form-group">
-                                <label>Alumno:</label>
+                                <label>Usuario:</label>
                                 <select name="id_usuario" required>
-                                    <option value="">Seleccionar alumno...</option>
-                                    <?php foreach ($alumnosDisponibles as $a): ?>
+                                    <option value="">Seleccionar usuario...</option>
+                                    <?php foreach ($usuariosDisponibles as $a): ?>
                                     <option value="<?= (int) $a['id_usuario'] ?>">
-                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (DNI ' . $a['dni'] . ')') ?>
+                                        <?= htmlspecialchars($a['nombre'] . ' ' . $a['apellido'] . ' (' . $a['rol'] . ' - DNI ' . $a['dni'] . ')') ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -494,6 +642,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                 <h3>Reservas</h3>
                 <div class="box">
                     <form method="GET">
+                        <input type="hidden" name="tab" value="reservas">
                         <input type="text" name="busqueda_reservas" placeholder="Buscar por libro, alumno o DNI..." value="<?= htmlspecialchars($busqueda_reservas) ?>">
                         <button><ion-icon name="search"></ion-icon></button>
                         <button type="submit" name="todos_reservas">Todos</button>
@@ -513,7 +662,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($resultadoR as $r): ?>
+                            <?php foreach ($reservasPagina as $r): ?>
                             <tr>
                                 <td><?= htmlspecialchars((string) $r['codigo_reserva']) ?></td>
                                 <td><?= htmlspecialchars($r['titulo']) ?></td>
@@ -539,6 +688,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         </tbody>
                     </table>
                 </div>
+                <?= $pagReservas->render() ?>
             </div>
         </div>
 
@@ -548,6 +698,93 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
         <div id="multas" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Multas</h2>
+            </div>
+            <div class="content">
+                <h3>Sanciones</h3>
+                <p style="flex:1 1 100%;margin:0 0 12px;font-size:13px;color:#666;">
+                    Las sanciones se generan al registrar una devolución (pestaña Préstamos): por retraso
+                    (<?= (int) MultaService::DIAS_SANCION_POR_DIA_DE_RETRASO ?> día de sanción por cada día de retraso) o por devolver el libro en mal estado
+                    (<?php
+                        $partes = [];
+                        foreach (MultaService::DIAS_POR_DANIO as $motivoDanio => $dias) {
+                            $partes[] = $motivoDanio . ' ' . (int) $dias . ' días';
+                        }
+                        echo htmlspecialchars(implode(', ', $partes));
+                    ?>). Mientras una sanción está vigente, el usuario no puede pedir libros ni reservar.
+                </p>
+                <form method="GET" class="filtro-auditoria">
+                    <input type="hidden" name="tab" value="multas">
+                    <div>
+                        <label for="busqueda_multas">Buscar</label>
+                        <input type="text" name="busqueda_multas" id="busqueda_multas" placeholder="Usuario, DNI, libro o motivo..." value="<?= htmlspecialchars($busqueda_multas) ?>">
+                    </div>
+                    <div>
+                        <label for="estado_multas">Estado</label>
+                        <select name="estado_multas" id="estado_multas">
+                            <option value="">Todas</option>
+                            <?php foreach (['vigente' => 'Vigentes', 'cumplida' => 'Cumplidas', 'anulada' => 'Anuladas'] as $valor => $texto): ?>
+                            <option value="<?= $valor ?>" <?= $estado_multas === $valor ? 'selected' : '' ?>><?= $texto ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit">Filtrar</button>
+                    <a class="limpiar" href="menu.php?tab=multas">Limpiar</a>
+                </form>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Libro</th>
+                                <th>Motivo</th>
+                                <th>Días</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                                <th>Estado</th>
+                                <th>Observaciones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($multasPagina)): ?>
+                            <tr><td colspan="10" style="text-align:center;">
+                                <?= ($busqueda_multas !== '' || $estado_multas !== '') ? 'No hay sanciones que coincidan con el filtro.' : 'Todavía no hay sanciones registradas.' ?>
+                            </td></tr>
+                            <?php endif; ?>
+                            <?php foreach ($multasPagina as $m): ?>
+                            <?php
+                                $colorEstado = ['vigente' => '#c0392b', 'cumplida' => '#27ae60', 'anulada' => '#888'][$m['estado_calculado']] ?? '#888';
+                            ?>
+                            <tr>
+                                <td><?= htmlspecialchars($m['nombre'] . ' ' . $m['apellido']) ?><br><small style="color:#888;">DNI <?= htmlspecialchars($m['dni']) ?></small></td>
+                                <td><?= htmlspecialchars($m['rol'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($m['titulo'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars(ucfirst($m['motivo'])) ?></td>
+                                <td><?= (int) $m['dias_sancion'] ?></td>
+                                <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($m['fecha_inicio']))) ?></td>
+                                <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($m['fecha_fin']))) ?></td>
+                                <td><strong style="color:<?= $colorEstado ?>;"><?= htmlspecialchars(ucfirst($m['estado_calculado'])) ?></strong></td>
+                                <td><?= htmlspecialchars($m['observaciones'] ?? '') ?></td>
+                                <td class="acciones">
+                                    <?php if ($m['estado_calculado'] === 'vigente'): ?>
+                                    <button type="button" class="btn-eliminar" title="Anular sanción"
+                                        data-id="<?= (int) $m['id_multa'] ?>"
+                                        data-usuario="<?= htmlspecialchars($m['nombre'] . ' ' . $m['apellido']) ?>"
+                                        data-motivo="<?= htmlspecialchars($m['motivo']) ?>"
+                                        onclick="anularMulta(this)">
+                                        <ion-icon name="close-circle-outline"></ion-icon>
+                                    </button>
+                                    <?php else: ?>
+                                        <span>-</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?= $pagMultas->render() ?>
             </div>
         </div>
 
@@ -627,7 +864,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($perfiles as $p): ?>
+                            <?php foreach ($perfilesPagina as $p): ?>
                             <tr class="fila-libro">
                                 <td><?= (int) $p['id_perfil'] ?></td>
                                 <td><?= htmlspecialchars($p['tipo_perfil']) ?></td>
@@ -660,6 +897,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                         </tbody>
                     </table>
                 </div>
+                <?= $pagPerfiles->render() ?>
             </div>
         </div>
 
@@ -669,6 +907,47 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
             </div>
             <div class="content">
                 <h3>Últimas acciones registradas</h3>
+                <style>
+                    .filtro-auditoria { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; flex:1 1 100%; margin-bottom:15px; }
+                    .filtro-auditoria label { display:block; font-size:12px; color:#555; margin-bottom:3px; }
+                    .filtro-auditoria select, .filtro-auditoria input { padding:7px 10px; border:2px solid #0d9469; border-radius:10px; font-size:14px; background:#fff; }
+                    .filtro-auditoria button, .filtro-auditoria a.limpiar { background:#10B981; border:none; color:#fff; padding:8px 14px; border-radius:20px; cursor:pointer; font-size:14px; text-decoration:none; }
+                    .filtro-auditoria a.limpiar { background:#888; }
+                    .filtro-auditoria-info { flex:1 1 100%; font-size:12px; color:#777; margin:-8px 0 10px; }
+                </style>
+                <form method="GET" class="filtro-auditoria">
+                    <div>
+                        <label for="aud_modulo">Módulo</label>
+                        <select name="aud_modulo" id="aud_modulo">
+                            <option value="">Todos</option>
+                            <?php foreach ($modulosAuditoria as $m): ?>
+                            <option value="<?= htmlspecialchars($m) ?>" <?= $aud_modulo === $m ? 'selected' : '' ?>><?= htmlspecialchars($m) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="aud_texto">Buscar</label>
+                        <input type="text" name="aud_texto" id="aud_texto" placeholder="Acción, detalle o e-mail..." value="<?= htmlspecialchars($aud_texto) ?>">
+                    </div>
+                    <div>
+                        <label for="aud_desde">Desde</label>
+                        <input type="date" name="aud_desde" id="aud_desde" value="<?= htmlspecialchars($aud_desde) ?>">
+                    </div>
+                    <div>
+                        <label for="aud_hasta">Hasta</label>
+                        <input type="date" name="aud_hasta" id="aud_hasta" value="<?= htmlspecialchars($aud_hasta) ?>">
+                    </div>
+                    <div>
+                        <label for="aud_limite">Por página</label>
+                        <select name="aud_limite" id="aud_limite">
+                            <?php foreach ([25, 50, 100, 200] as $n): ?>
+                            <option value="<?= $n ?>" <?= $aud_limite === $n ? 'selected' : '' ?>><?= $n ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="aud_filtrar" value="1">Filtrar</button>
+                    <a class="limpiar" href="menu.php?tab=auditoria">Limpiar</a>
+                </form>
                 <div class="tabla">
                     <table>
                         <thead>
@@ -682,7 +961,7 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             </tr>
                         </thead>
                         <tbody>
-                            <?php $contador = 1; ?>
+                            <?php $contador = $pagAuditoria->offset() + 1; ?>
                             <?php foreach ($auditorias as $a): ?>
                             <tr class="filaAuditoria">
                                 <td><?= $contador++ ?></td>
@@ -695,12 +974,15 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                             <?php endforeach; ?>
                             <?php if (empty($auditorias)): ?>
                             <tr>
-                                <td colspan="6" class="empty-state">No hay registros de auditoría todavía.</td>
+                                <td colspan="6" class="empty-state"><?= $auditoriaFiltrada && ($aud_modulo !== '' || $aud_texto !== '' || $aud_desde !== '' || $aud_hasta !== '')
+                                    ? 'No hay registros que coincidan con el filtro.'
+                                    : 'No hay registros de auditoría todavía.' ?></td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
+                <?= $pagAuditoria->render() ?>
             </div>
         </div>
 
@@ -877,11 +1159,6 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
                     </div>
 
                     <div class="form-group">
-                        <label>Stock:</label>
-                        <input type="number" id="mod_stock" name="stock" min="0" required>
-                    </div>
-                    
-                    <div class="form-group">
                         <label>Autor:</label>
                         <input type="text" id="mod_autor" name="autor" required>
                         
@@ -943,6 +1220,105 @@ $alumnosDisponibles = array_filter($resultadoU, fn($u) => $u['rol'] === 'alumno'
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js?v=3"></script>
     <script src="script_alertas.js"></script>
+    <script>
+        // ----- Devolución con estado del libro (genera sanciones por retraso / mal estado) -----
+        const DIAS_DANIO = <?= json_encode(MultaService::DIAS_POR_DANIO) ?>;
+        const DIAS_POR_DIA_DE_RETRASO = <?= (int) MultaService::DIAS_SANCION_POR_DIA_DE_RETRASO ?>;
+        let devolucionVence = '';
+
+        // Días de calendario de retraso respecto al vencimiento ('YYYY-MM-DD'); solo orienta, el cálculo real lo hace el servidor.
+        function diasDeRetrasoHoy(vence) {
+            const [a, m, d] = vence.split('-').map(Number);
+            const venceFecha = new Date(a, m - 1, d);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            return Math.max(0, Math.round((hoy - venceFecha) / 86400000));
+        }
+
+        function abrirDevolucion(boton) {
+            devolucionVence = boton.dataset.vence;
+            document.getElementById('dev_id_prestamo').value = boton.dataset.id;
+            document.getElementById('dev_estado_libro').value = 'bueno';
+            document.getElementById('dev_observaciones').value = '';
+            const resumen = document.getElementById('dev_resumen');
+            resumen.textContent = '';
+            const libro = document.createElement('strong');
+            libro.textContent = boton.dataset.libro;
+            resumen.append('Libro: ', libro, ' · Usuario: ' + boton.dataset.usuario);
+            actualizarAvisoDevolucion();
+            abrirModal('modalDevolucion');
+        }
+
+        function actualizarAvisoDevolucion() {
+            const aviso = document.getElementById('dev_aviso');
+            const estado = document.getElementById('dev_estado_libro').value;
+            const sanciones = [];
+            const retraso = diasDeRetrasoHoy(devolucionVence);
+            if (retraso > 0) {
+                sanciones.push('retraso de ' + retraso + ' día(s) → ' + (retraso * DIAS_POR_DIA_DE_RETRASO) + ' día(s)');
+            }
+            if (DIAS_DANIO[estado]) {
+                sanciones.push(estado + ' → ' + DIAS_DANIO[estado] + ' día(s)');
+            }
+            if (sanciones.length === 0) {
+                aviso.style.color = '#27ae60';
+                aviso.textContent = 'Sin sanción: devolución a tiempo y en buen estado.';
+            } else {
+                aviso.style.color = '#c0392b';
+                aviso.textContent = 'Se generará una sanción: ' + sanciones.join(' + ') + '.';
+            }
+        }
+
+        // ----- Agregar stock a un libro -----
+        function abrirAgregarStock() {
+            document.getElementById('stock_id_libro').value = '';
+            document.getElementById('stock_cantidad').value = 1;
+            document.getElementById('stock_procedencia').value = '';
+            actualizarVistaStock();
+            abrirModal('modalAgregarStock');
+        }
+
+        function actualizarVistaStock() {
+            const select = document.getElementById('stock_id_libro');
+            const vista = document.getElementById('stock_vista');
+            const cantidad = parseInt(document.getElementById('stock_cantidad').value, 10);
+            if (!select.value || !(cantidad > 0)) {
+                vista.textContent = '';
+                return;
+            }
+            const actual = parseInt(select.selectedOptions[0].dataset.stock, 10);
+            vista.textContent = 'Stock actual: ' + actual + ' → quedará en ' + (actual + cantidad) + '.';
+        }
+
+        // ----- Anular una sanción -----
+        function anularMulta(boton) {
+            Swal.fire({
+                title: '¿Anular la sanción?',
+                text: boton.dataset.usuario + ' (' + boton.dataset.motivo + '). El usuario vuelve a poder pedir libros.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, anular',
+                cancelButtonText: 'Cancelar'
+            }).then(function (resultado) {
+                if (!resultado.isConfirmed) return;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '../controlers/procesar_multa.php';
+                [['accion', 'anular'], ['id_multa', boton.dataset.id]].forEach(function (par) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = par[0];
+                    input.value = par[1];
+                    form.appendChild(input);
+                });
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+    </script>
+    <?php if ($tabActiva !== ''): ?>
+    <script>window.addEventListener('load', function () { showtab('<?= $tabActiva ?>'); });</script>
+    <?php endif; ?>
     <?php
         $usuarioActual = $usuarioRepo->obtenerPorId($id_usuario_logueado);
         $nombreUsuarioActual = $usuarioActual

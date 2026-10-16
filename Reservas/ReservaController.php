@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php';
 require_once dirname(__DIR__) . '/Reservas/Reserva.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaService.php';
@@ -55,6 +56,7 @@ class ReservaController
         $idUsuario = (int) ($_POST['id_usuario'] ?? 0);
 
         $error = $this->service->solicitarReserva($idLibro, $idUsuario);
+        $this->auditar('registrar_reserva', $error, $idLibro, $idUsuario);
         $error
             ? $this->alerta('warning', 'Ups', $error)
             : $this->alerta('success', '¡Éxito!', 'Reserva registrada correctamente.');
@@ -72,6 +74,7 @@ class ReservaController
         $idUsuario = (int) $_SESSION['id_usuario'];
 
         $error = $this->service->solicitarReserva($idLibro, $idUsuario);
+        $this->auditar('solicitar_reserva', $error, $idLibro, $idUsuario);
         $error
             ? $this->alerta('warning', 'Ups', $error)
             : $this->alerta('success', '¡Éxito!', 'Reserva registrada correctamente.');
@@ -82,9 +85,22 @@ class ReservaController
     {
         $idReserva = (int) ($_POST['id_reserva'] ?? $_GET['id_reserva'] ?? 0);
         $error = $this->service->cancelarReserva($idReserva);
+        if ($error === null) {
+            Auditoria::log('Reservas', 'cancelar_reserva', "reserva id: $idReserva");
+        }
         $error
             ? $this->alerta('warning', 'Ups', $error)
             : $this->alerta('success', '¡Éxito!', 'Reserva cancelada correctamente.');
+    }
+
+    /** Audita un intento de reserva: éxito con $accion, o 'reserva_rechazada' con el motivo. */
+    private function auditar(string $accion, ?string $error, int $idLibro, int $idUsuario): void
+    {
+        $detalle = 'libro: ' . Auditoria::describirLibro($idLibro)
+                 . ' | usuario: ' . Auditoria::describirUsuario($idUsuario);
+        $error === null
+            ? Auditoria::log('Reservas', $accion, $detalle)
+            : Auditoria::log('Reservas', 'reserva_rechazada', "$detalle | motivo: $error");
     }
 
     private function alerta(string $tipo, string $titulo, string $msg): void

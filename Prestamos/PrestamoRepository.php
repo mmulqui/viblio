@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/Multas/MultaRepository.php';
 require_once dirname(__DIR__) . '/Core/Database.php';
 
 /**
@@ -13,11 +14,28 @@ class PrestamoRepository
     public const LIMITE_PRESTAMOS_ALUMNO = 3;
     public const DIAS_PRESTAMO           = 7;
 
+    /**
+     * Límite de préstamos simultáneos según el tipo de perfil (perfil.tipo_perfil).
+     * null = sin límite. Cualquier perfil que no figure acá usa LIMITE_PRESTAMOS_ALUMNO.
+     */
+    public const LIMITES_POR_PERFIL = [
+        'alumno'   => self::LIMITE_PRESTAMOS_ALUMNO,
+        'profesor' => null,
+    ];
+
     private mysqli $db;
 
     public function __construct()
     {
         $this->db = Database::getConexion();
+    }
+
+    /** Devuelve el límite de préstamos simultáneos para un perfil (null = ilimitado). */
+    public static function limitePorPerfil(string $tipoPerfil): ?int
+    {
+        return array_key_exists($tipoPerfil, self::LIMITES_POR_PERFIL)
+            ? self::LIMITES_POR_PERFIL[$tipoPerfil]
+            : self::LIMITE_PRESTAMOS_ALUMNO;
     }
 
     // ─── Consultas de lectura ─────────────────────────────────────────────────
@@ -153,31 +171,57 @@ class PrestamoRepository
 
             // Bloquea también la fila del usuario, para que dos préstamos simultáneos
             // del mismo alumno no burlen el límite de 3 contando "al mismo tiempo".
-            $stmt = $this->db->prepare("SELECT id_usuario FROM usuario WHERE id_usuario = ? FOR UPDATE");
+            $stmt = $this->db->prepare("SELECT id_perfil FROM usuario WHERE id_usuario = ? FOR UPDATE");
             $stmt->bind_param('i', $idUsuario);
             $stmt->execute();
-            $stmt->store_result();
-            $existeUsuario = $stmt->num_rows > 0;
+            $filaUsuario = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-            if (!$existeUsuario) {
+            if (!$filaUsuario) {
                 $this->db->rollback();
                 return ['ok' => false, 'error' => 'El usuario no existe.', 'id_prestamo' => null];
             }
 
-            $stmt = $this->db->prepare(
-                "SELECT COUNT(*) AS total FROM prestamo WHERE id_usuario = ? AND id_estado = ?"
-            );
-            $stmt->bind_param('ii', $idUsuario, $estadoActivo);
-            $stmt->execute();
-            $total = (int) $stmt->get_result()->fetch_assoc()['total'];
-            $stmt->close();
-            if ($total >= self::LIMITE_PRESTAMOS_ALUMNO) {
+            // Sanción vigente (multa): mientras dure, no puede pedir libros, sea cual sea su rol.
+            $sancionHasta = (new MultaRepository())->sancionVigenteHasta($idUsuario);
+            if ($sancionHasta !== null) {
                 $this->db->rollback();
                 return [
                     'ok'          => false,
-                    'error'       => 'Alcanzaste el límite de ' . self::LIMITE_PRESTAMOS_ALUMNO . ' préstamos simultáneos.',
+                    'error'       => 'El usuario tiene una sanción vigente hasta el '
+                                     . date('d/m/Y H:i', strtotime($sancionHasta)) . ' y no puede pedir libros.',
                     'id_prestamo' => null,
                 ];
+            }
+
+            // El perfil se lee SIN bloqueo (solo se bloquea la fila del usuario), para no
+            // serializar los préstamos de todos los alumnos sobre la misma fila de perfil.
+            // Se toma de la BD y no de la sesión porque registrar() presta a nombre de otro usuario.
+            $stmt = $this->db->prepare("SELECT tipo_perfil FROM perfil WHERE id_perfil = ?");
+            $stmt->bind_param('i', $filaUsuario['id_perfil']);
+            $stmt->execute();
+            $filaPerfil = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $tipoPerfil = $filaPerfil['tipo_perfil'] ?? '';
+
+            $limite = self::limitePorPerfil($tipoPerfil);
+
+            // Perfil sin límite (profesor): no hace falta contar los préstamos activos.
+            if ($limite !== null) {
+                $stmt = $this->db->prepare(
+                    "SELECT COUNT(*) AS total FROM prestamo WHERE id_usuario = ? AND id_estado = ?"
+                );
+                $stmt->bind_param('ii', $idUsuario, $estadoActivo);
+                $stmt->execute();
+                $total = (int) $stmt->get_result()->fetch_assoc()['total'];
+                $stmt->close();
+                if ($total >= $limite) {
+                    $this->db->rollback();
+                    return [
+                        'ok'          => false,
+                        'error'       => 'Alcanzaste el límite de ' . $limite . ' préstamos simultáneos.',
+                        'id_prestamo' => null,
+                    ];
+                }
             }
 
             $codigoPrestamo = random_int(100000, 999999);
@@ -202,17 +246,18 @@ class PrestamoRepository
         }
     }
 
-    /** Marca un préstamo activo como devuelto. */
+    /** Marca un préstamo activo (o vencido) como devuelto. */
     public function registrarDevolucion(int $idPrestamo): bool
     {
         $estadoDevuelto = self::ESTADO_DEVUELTO;
         $estadoActivo   = self::ESTADO_ACTIVO;
+        $estadoVencido  = self::ESTADO_VENCIDO;
         $stmt = $this->db->prepare(
             "UPDATE prestamo
              SET fecha_devolucion = NOW(), id_estado = ?
-             WHERE id_prestamo = ? AND id_estado = ?"
+             WHERE id_prestamo = ? AND id_estado IN (?, ?)"
         );
-        $stmt->bind_param('iii', $estadoDevuelto, $idPrestamo, $estadoActivo);
+        $stmt->bind_param('iiii', $estadoDevuelto, $idPrestamo, $estadoActivo, $estadoVencido);
         $ok = $stmt->execute() && $stmt->affected_rows > 0;
         $stmt->close();
         return $ok;

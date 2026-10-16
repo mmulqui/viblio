@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php';
 require_once dirname(__DIR__) . '/Modulos/ModuloRepository.php';
 
 /**
@@ -41,7 +42,10 @@ class ModuloController
             echo json_encode(['success' => false, 'message' => 'Perfil inválido']);
             return;
         }
-        $this->repo->guardarPorPerfil($idPerfil, $idsActivos);
+        $ok = $this->repo->guardarPorPerfil($idPerfil, $idsActivos);
+        if ($ok !== false) {
+            Auditoria::log('Módulos', 'guardar_modulos_perfil', "perfil id: $idPerfil | módulos activos: " . count((array) $idsActivos));
+        }
         echo json_encode(['success' => true, 'message' => 'Módulos del perfil actualizados correctamente']);
     }
 
@@ -71,7 +75,10 @@ class ModuloController
             echo json_encode(['success' => false, 'message' => 'Usuario inválido']);
             return;
         }
-        $this->repo->guardarPorUsuario($idUsuario, $idsActivos);
+        $ok = $this->repo->guardarPorUsuario($idUsuario, $idsActivos);
+        if ($ok !== false) {
+            Auditoria::log('Módulos', 'guardar_modulos_usuario', 'usuario: ' . Auditoria::describirUsuario($idUsuario) . ' | módulos activos: ' . count((array) $idsActivos));
+        }
         echo json_encode(['success' => true, 'message' => 'Módulos actualizados correctamente']);
     }
 }

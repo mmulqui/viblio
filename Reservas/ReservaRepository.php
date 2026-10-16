@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
+require_once dirname(__DIR__) . '/Multas/MultaRepository.php';
 
 /**
  * ReservaRepository — todas las consultas a la BD relacionadas con reservas.
@@ -86,6 +87,18 @@ class ReservaRepository
             if (!$existeLibro) {
                 $this->db->rollback();
                 return ['ok' => false, 'error' => 'El libro no existe.', 'id_reserva' => null];
+            }
+
+            // Sanción vigente (multa): mientras dure, no puede reservar, sea cual sea su rol.
+            $sancionHasta = (new MultaRepository())->sancionVigenteHasta($idUsuario);
+            if ($sancionHasta !== null) {
+                $this->db->rollback();
+                return [
+                    'ok'         => false,
+                    'error'      => 'El usuario tiene una sanción vigente hasta el '
+                                    . date('d/m/Y H:i', strtotime($sancionHasta)) . ' y no puede reservar libros.',
+                    'id_reserva' => null,
+                ];
             }
 
             $estadoActivoPrestamo = PrestamoRepository::ESTADO_ACTIVO;

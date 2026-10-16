@@ -4,6 +4,9 @@ require_once dirname(__DIR__) . '/Core/Database.php';
 
 class LibroRepository
 {
+    /** Máximo de ejemplares que se pueden cargar de una vez con "Agregar stock" (evita errores de tipeo). */
+    public const MAX_STOCK_POR_CARGA = 9999;
+
     private mysqli $db;
 
     public function __construct()
@@ -114,28 +117,92 @@ class LibroRepository
         return $ok;
     }
 
-    /** Modifica un libro vía stored procedure. */
+    /**
+     * Modifica los datos de un libro vía stored procedure. NO cambia el stock: eso se hace
+     * con agregarStock(). Como el procedimiento recibe el stock, se le pasa el actual, leído
+     * con bloqueo de fila para no pisar un préstamo o devolución que ocurra en ese instante.
+     */
     public function modificar(array $datos): bool
     {
-        $stmt = $this->db->prepare(
-            "CALL modificar_libro(?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        );
-        $stock = max(0, (int) ($datos['stock'] ?? 0));
-        $stmt->bind_param('ssssissss',
-            $datos['isbn'],
-            $datos['titulo'],
-            $datos['edicion'],
-            $datos['anio'],
-            $stock,
-            $datos['autor'],
-            $datos['editorial'],
-            $datos['categoria'],
-            $datos['genero']
-        );
-        $ok = $stmt->execute();
-        if (!$ok) error_log("Error modificar_libro: " . $stmt->error);
-        $stmt->close();
-        return $ok;
+        $this->db->begin_transaction();
+        try {
+            $stmt = $this->db->prepare("SELECT stock FROM libro WHERE isbn = ? FOR UPDATE");
+            $stmt->bind_param('s', $datos['isbn']);
+            $stmt->execute();
+            $fila = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if (!$fila) {
+                $this->db->rollback();
+                return false;
+            }
+            $stock = (int) $fila['stock'];
+
+            $stmt = $this->db->prepare(
+                "CALL modificar_libro(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param('ssssissss',
+                $datos['isbn'],
+                $datos['titulo'],
+                $datos['edicion'],
+                $datos['anio'],
+                $stock,
+                $datos['autor'],
+                $datos['editorial'],
+                $datos['categoria'],
+                $datos['genero']
+            );
+            $ok = $stmt->execute();
+            if (!$ok) error_log("Error modificar_libro: " . $stmt->error);
+            $stmt->close();
+
+            $ok ? $this->db->commit() : $this->db->rollback();
+            return $ok;
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            error_log('Error modificar_libro: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Suma ejemplares al stock de un libro (ingreso de libros: compra, donación, etc.).
+     * El trigger libro_bu recalcula "estado" a partir del stock, así que un libro sin
+     * stock vuelve a quedar disponible.
+     *
+     * @return array{titulo:string, isbn:string, stock_anterior:int, stock_nuevo:int}|null
+     *         null si el libro no existe o no se pudo guardar.
+     */
+    public function agregarStock(int $idLibro, int $cantidad): ?array
+    {
+        $this->db->begin_transaction();
+        try {
+            $stmt = $this->db->prepare("SELECT titulo, isbn, stock FROM libro WHERE id_libro = ? FOR UPDATE");
+            $stmt->bind_param('i', $idLibro);
+            $stmt->execute();
+            $libro = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if (!$libro) {
+                $this->db->rollback();
+                return null;
+            }
+
+            $stmt = $this->db->prepare("UPDATE libro SET stock = stock + ? WHERE id_libro = ?");
+            $stmt->bind_param('ii', $cantidad, $idLibro);
+            $stmt->execute();
+            $stmt->close();
+
+            $this->db->commit();
+            return [
+                'titulo'         => $libro['titulo'],
+                'isbn'           => $libro['isbn'],
+                'stock_anterior' => (int) $libro['stock'],
+                'stock_nuevo'    => (int) $libro['stock'] + $cantidad,
+            ];
+        } catch (Throwable $e) {
+            $this->db->rollback();
+            error_log('Error agregarStock: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**

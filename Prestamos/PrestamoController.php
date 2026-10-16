@@ -1,8 +1,10 @@
 <?php
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php';
 require_once dirname(__DIR__) . '/Prestamos/Prestamo.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoService.php';
+require_once dirname(__DIR__) . '/Multas/MultaService.php';
 
 class PrestamoController
 {
@@ -55,6 +57,7 @@ class PrestamoController
         $idUsuario = (int) ($_POST['id_usuario'] ?? 0);
 
         $error = $this->service->solicitarPrestamo($idLibro, $idUsuario);
+        $this->auditar('registrar_prestamo', $error, $idLibro, $idUsuario);
         $error
             ? $this->alerta('warning', 'Ups', $error)
             : $this->alerta('success', '¡Éxito!', 'Préstamo registrado correctamente.');
@@ -72,32 +75,79 @@ class PrestamoController
         $idUsuario = (int) $_SESSION['id_usuario'];
 
         $error = $this->service->solicitarPrestamo($idLibro, $idUsuario);
+        $this->auditar('solicitar_prestamo', $error, $idLibro, $idUsuario);
         $error
             ? $this->alerta('warning', 'Ups', $error)
             : $this->alerta('success', '¡Éxito!', 'Préstamo registrado correctamente.');
     }
 
     /** Registra la devolución de un préstamo. Solo el bibliotecario puede hacerlo. */
+    /**
+     * Registra la devolución. Si fue tardía o el libro volvió en mal estado
+     * (rayado, maltratado, roto) se generan las sanciones correspondientes.
+     */
     public function devolver(): void
     {
         AuthGuard::verificarRol(['bibliotecario']);
 
-        $idPrestamo = (int) ($_POST['id_prestamo'] ?? $_GET['id_prestamo'] ?? 0);
-        $error = $this->service->devolverPrestamo($idPrestamo);
-        $error
-            ? $this->alerta('warning', 'Ups', $error)
-            : $this->alerta('success', '¡Éxito!', 'Devolución registrada correctamente.');
+        $idPrestamo    = (int) ($_POST['id_prestamo'] ?? $_GET['id_prestamo'] ?? 0);
+        $estadoLibro   = MultaService::normalizarEstadoLibro((string) ($_POST['estado_libro'] ?? 'bueno'));
+        $observaciones = (string) ($_POST['observaciones'] ?? '');
+
+        $resultado = $this->service->devolverPrestamo($idPrestamo, $estadoLibro, $observaciones, (int) $_SESSION['id_usuario']);
+        if (!$resultado['ok']) {
+            $this->alerta('warning', 'Ups', $resultado['error'], 'prestamos');
+        }
+
+        $prestamo  = $resultado['prestamo'];
+        $idUsuario = (int) $prestamo['id_usuario'];
+        $usuario   = Auditoria::describirUsuario($idUsuario);
+
+        Auditoria::log(
+            'Préstamos',
+            'devolver_prestamo',
+            "préstamo id: $idPrestamo | libro: " . Auditoria::describirLibro((int) $prestamo['id_libro'])
+                . " | usuario: $usuario | estado del libro: $estadoLibro"
+        );
+        foreach ($resultado['multas'] as $m) {
+            Auditoria::log(
+                'Multas',
+                'generar_multa',
+                "multa id: {$m['id_multa']} | usuario: $usuario | motivo: {$m['motivo']} | {$m['dias']} día(s) | préstamo id: $idPrestamo"
+            );
+        }
+
+        if ($resultado['multas']) {
+            $detalle = implode(', ', array_map(fn($m) => "{$m['motivo']} ({$m['dias']} día(s))", $resultado['multas']));
+            $hasta   = (new MultaRepository())->sancionVigenteHasta($idUsuario);
+            $msg     = "Devolución registrada. Se generó una sanción por: $detalle."
+                     . ($hasta ? ' El usuario no podrá pedir libros ni reservar hasta el ' . date('d/m/Y H:i', strtotime($hasta)) . '.' : '');
+            $this->alerta('warning', 'Devolución con sanción', $msg, 'prestamos');
+        }
+
+        $this->alerta('success', '¡Éxito!', 'Devolución registrada correctamente.', 'prestamos');
     }
 
-    private function alerta(string $tipo, string $titulo, string $msg): void
+    /** Audita un intento de préstamo: éxito con $accion, o 'prestamo_rechazado' con el motivo. */
+    private function auditar(string $accion, ?string $error, int $idLibro, int $idUsuario): void
+    {
+        $detalle = 'libro: ' . Auditoria::describirLibro($idLibro)
+                 . ' | usuario: ' . Auditoria::describirUsuario($idUsuario);
+        $error === null
+            ? Auditoria::log('Préstamos', $accion, $detalle)
+            : Auditoria::log('Préstamos', 'prestamo_rechazado', "$detalle | motivo: $error");
+    }
+
+    private function alerta(string $tipo, string $titulo, string $msg, string $tab = ''): void
     {
         $_SESSION['alerta'] = compact('tipo', 'titulo', 'msg');
-        $this->redirigir();
+        $this->redirigir($tab);
     }
 
-    private function redirigir(): never
+    /** $tab = pestaña de menu.php que se reabre al volver (vacío = la de inicio). */
+    private function redirigir(string $tab = ''): never
     {
-        header('Location: ../views/menu.php');
+        header('Location: ../views/menu.php' . ($tab !== '' ? '?tab=' . urlencode($tab) : ''));
         exit;
     }
 }

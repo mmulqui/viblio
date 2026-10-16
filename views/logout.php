@@ -4,6 +4,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../Core/Auditoria.php';
+
+// Se audita ANTES de vaciar la sesión, mientras todavía se sabe quién es.
+if (!empty($_SESSION['id_usuario'])) {
+    Auditoria::log('Autenticación', 'logout');
+}
+
 $_SESSION = [];
 
 if (ini_get("session.use_cookies")) {

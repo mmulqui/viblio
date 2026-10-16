@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
+require_once dirname(__DIR__) . '/Core/Auditoria.php';
 require_once dirname(__DIR__) . '/Perfiles/Perfil.php';
 require_once dirname(__DIR__) . '/Perfiles/PerfilRepository.php';
 
@@ -43,6 +44,9 @@ class PerfilController
         }
 
         $ok = $this->repo->agregar($tipoPerfil);
+        if ($ok) {
+            Auditoria::log('Perfiles', 'agregar_perfil', "perfil: $tipoPerfil");
+        }
         $ok
             ? $this->redirigirConAlerta('success', '¡Éxito!', 'Perfil agregado correctamente.')
             : $this->redirigirConAlerta('error', 'Error', 'No se pudo agregar el perfil.');
@@ -64,6 +68,9 @@ class PerfilController
         }
 
         $ok = $this->repo->modificar($idPerfil, $tipoPerfil);
+        if ($ok) {
+            Auditoria::log('Perfiles', 'modificar_perfil', "perfil id: $idPerfil, nuevo nombre: $tipoPerfil");
+        }
         $ok
             ? $this->redirigirConAlerta('success', '¡Éxito!', 'Perfil modificado correctamente.')
             : $this->redirigirConAlerta('error', 'Error', 'No se pudo modificar el perfil.');
@@ -86,6 +93,9 @@ class PerfilController
         }
 
         $ok = $this->repo->darBajaLogica($idPerfil);
+        if ($ok) {
+            Auditoria::log('Perfiles', 'baja_perfil', "perfil id: $idPerfil");
+        }
         echo json_encode($ok
             ? ['ok' => true,  'msg' => 'Perfil eliminado (baja lógica) correctamente.']
             : ['ok' => false, 'msg' => 'No se pudo eliminar el perfil.']
