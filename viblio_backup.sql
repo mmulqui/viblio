@@ -63,7 +63,7 @@ CREATE TABLE `auditoria` (
   PRIMARY KEY (`id_auditoria`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `auditoria_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `auditoria` (
 
 LOCK TABLES `auditoria` WRITE;
 /*!40000 ALTER TABLE `auditoria` DISABLE KEYS */;
-INSERT INTO `auditoria` VALUES (1,9,'Sistema','login_exitoso','','::1','2026-09-04 06:39:05'),(2,9,'Sistema','login_exitoso','','::1','2026-09-04 20:20:20'),(3,NULL,'Sistema','registro_usuario','email: a@gmail.com','::1','2026-09-04 20:21:35'),(4,9,'Sistema','baja_usuario','dni: 40400400','::1','2026-09-04 20:22:03'),(5,9,'Sistema','modificar_usuario','id editado: 20','::1','2026-09-04 20:23:39'),(6,20,'Sistema','login_exitoso','','::1','2026-09-04 20:31:46'),(7,20,'Sistema','login_exitoso','','::1','2026-09-04 21:17:54'),(8,9,'Sistema','login_exitoso','','::1','2026-09-04 23:15:28'),(9,9,'Sistema','login_exitoso','','::1','2026-09-12 02:07:10'),(10,9,'Sistema','login_exitoso','','::1','2026-09-14 02:15:24'),(11,9,'Sistema','login_exitoso','','::1','2026-09-14 03:09:06'),(12,9,'Sistema','login_exitoso','','::1','2026-09-15 23:03:31'),(13,9,'Sistema','login_exitoso','','::1','2026-09-16 00:28:05'),(14,9,'Sistema','login_exitoso','','::1','2026-09-16 00:46:32'),(15,NULL,'Sistema','registro_usuario','email: prueba@gmail.com','::1','2026-09-16 01:30:07'),(16,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:30:23'),(17,26,'Sistema','login_exitoso','','::1','2026-09-16 01:30:56'),(18,9,'Sistema','login_exitoso','','::1','2026-09-16 01:32:46'),(19,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:33:08'),(20,9,'Autenticación','login_exitoso','','::1','2026-09-17 06:45:15'),(21,9,'Usuarios','modificar_usuario','rol: \"profesor\" -> \"alumno\" (usuario id: 19)','::1','2026-09-17 06:45:44'),(22,9,'Autenticación','login_exitoso','','::1','2026-09-17 22:33:51'),(23,9,'Autenticación','login_exitoso','','::1','2026-09-18 01:51:38'),(24,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 01:51:46'),(25,9,'Autenticación','login_exitoso','','::1','2026-09-18 07:05:35'),(26,9,'Autenticación','login_exitoso','','::1','2026-09-18 22:29:34'),(27,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-09-18 22:45:03'),(28,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 22:45:17'),(29,9,'Usuarios','modificar_usuario','nombre: \"prueba\" -> \"Juan\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-18 22:45:33'),(30,9,'Autenticación','login_exitoso','','::1','2026-09-19 00:28:23'),(31,9,'Autenticación','login_exitoso','','::1','2026-09-19 01:12:35'),(32,9,'Usuarios','modificar_usuario','apellido: \"asd\" -> \"Perez\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-19 01:24:56'),(33,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:34:50'),(34,NULL,'Usuarios','registro_usuario','email: script@gmail.com','::1','2026-09-19 03:40:15'),(35,9,'Usuarios','modificar_usuario','Sin cambios detectados (usuario id: 27, email: script@gmail.com)','::1','2026-09-19 03:43:38'),(36,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-19 03:55:38'),(37,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:55:46'),(38,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-29 04:32:22'),(39,9,'Autenticación','login_exitoso','','::1','2026-09-29 04:32:30'),(40,9,'Autenticación','login_exitoso','','::1','2026-09-29 23:24:03'),(41,9,'Autenticación','login_exitoso','','::1','2026-09-30 00:27:17'),(42,9,'Autenticación','login_exitoso','','::1','2026-09-30 02:33:48'),(43,9,'Autenticación','login_exitoso','','::1','2026-10-01 03:56:15'),(44,9,'Autenticación','login_exitoso','','::1','2026-10-01 04:08:48'),(45,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-10-01 04:11:11'),(46,20,'Autenticación','login_exitoso','','::1','2026-10-01 04:11:36'),(47,9,'Autenticación','login_exitoso','','::1','2026-10-02 23:42:08');
+INSERT INTO `auditoria` VALUES (1,9,'Sistema','login_exitoso','','::1','2026-09-04 06:39:05'),(2,9,'Sistema','login_exitoso','','::1','2026-09-04 20:20:20'),(3,NULL,'Sistema','registro_usuario','email: a@gmail.com','::1','2026-09-04 20:21:35'),(4,9,'Sistema','baja_usuario','dni: 40400400','::1','2026-09-04 20:22:03'),(5,9,'Sistema','modificar_usuario','id editado: 20','::1','2026-09-04 20:23:39'),(6,20,'Sistema','login_exitoso','','::1','2026-09-04 20:31:46'),(7,20,'Sistema','login_exitoso','','::1','2026-09-04 21:17:54'),(8,9,'Sistema','login_exitoso','','::1','2026-09-04 23:15:28'),(9,9,'Sistema','login_exitoso','','::1','2026-09-12 02:07:10'),(10,9,'Sistema','login_exitoso','','::1','2026-09-14 02:15:24'),(11,9,'Sistema','login_exitoso','','::1','2026-09-14 03:09:06'),(12,9,'Sistema','login_exitoso','','::1','2026-09-15 23:03:31'),(13,9,'Sistema','login_exitoso','','::1','2026-09-16 00:28:05'),(14,9,'Sistema','login_exitoso','','::1','2026-09-16 00:46:32'),(15,NULL,'Sistema','registro_usuario','email: prueba@gmail.com','::1','2026-09-16 01:30:07'),(16,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:30:23'),(17,26,'Sistema','login_exitoso','','::1','2026-09-16 01:30:56'),(18,9,'Sistema','login_exitoso','','::1','2026-09-16 01:32:46'),(19,9,'Sistema','modificar_usuario','id editado: 26','::1','2026-09-16 01:33:08'),(20,9,'Autenticación','login_exitoso','','::1','2026-09-17 06:45:15'),(21,9,'Usuarios','modificar_usuario','rol: \"profesor\" -> \"alumno\" (usuario id: 19)','::1','2026-09-17 06:45:44'),(22,9,'Autenticación','login_exitoso','','::1','2026-09-17 22:33:51'),(23,9,'Autenticación','login_exitoso','','::1','2026-09-18 01:51:38'),(24,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 01:51:46'),(25,9,'Autenticación','login_exitoso','','::1','2026-09-18 07:05:35'),(26,9,'Autenticación','login_exitoso','','::1','2026-09-18 22:29:34'),(27,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-09-18 22:45:03'),(28,9,'Usuarios','modificar_usuario','rol: \"bibliotecario\" -> \"alumno\" (usuario id: 19, email: jonasalejandrovera123@hotmail.com)','::1','2026-09-18 22:45:17'),(29,9,'Usuarios','modificar_usuario','nombre: \"prueba\" -> \"Juan\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-18 22:45:33'),(30,9,'Autenticación','login_exitoso','','::1','2026-09-19 00:28:23'),(31,9,'Autenticación','login_exitoso','','::1','2026-09-19 01:12:35'),(32,9,'Usuarios','modificar_usuario','apellido: \"asd\" -> \"Perez\" (usuario id: 26, email: prueba@gmail.com)','::1','2026-09-19 01:24:56'),(33,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:34:50'),(34,NULL,'Usuarios','registro_usuario','email: script@gmail.com','::1','2026-09-19 03:40:15'),(35,9,'Usuarios','modificar_usuario','Sin cambios detectados (usuario id: 27, email: script@gmail.com)','::1','2026-09-19 03:43:38'),(36,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-19 03:55:38'),(37,9,'Autenticación','login_exitoso','','::1','2026-09-19 03:55:46'),(38,9,'Autenticación','login_fallido','contraseña incorrecta','::1','2026-09-29 04:32:22'),(39,9,'Autenticación','login_exitoso','','::1','2026-09-29 04:32:30'),(40,9,'Autenticación','login_exitoso','','::1','2026-09-29 23:24:03'),(41,9,'Autenticación','login_exitoso','','::1','2026-09-30 00:27:17'),(42,9,'Autenticación','login_exitoso','','::1','2026-09-30 02:33:48'),(43,9,'Autenticación','login_exitoso','','::1','2026-10-01 03:56:15'),(44,9,'Autenticación','login_exitoso','','::1','2026-10-01 04:08:48'),(45,9,'Usuarios','modificar_usuario','rol: \"alumno\" -> \"bibliotecario\" (usuario id: 20, email: salmasanchez@hotmail.com)','::1','2026-10-01 04:11:11'),(46,20,'Autenticación','login_exitoso','','::1','2026-10-01 04:11:36'),(47,9,'Autenticación','login_exitoso','','::1','2026-10-02 23:42:08'),(48,9,'Autenticación','login_exitoso','','::1','2026-10-13 06:21:50'),(49,9,'Autenticación','login_exitoso','','::1','2026-10-13 22:39:08'),(50,9,'Préstamos','registrar_prestamo','libro: Harry Potter y la piedra filosofal (ISBN 978074753) | usuario: Denis Gomez (profesor, DNI 33333333)','::1','2026-10-13 22:56:16'),(51,9,'Autenticación','login_exitoso','','::1','2026-10-14 00:25:58'),(52,9,'Autenticación','login_exitoso','','::1','2026-10-14 01:13:11'),(53,9,'Autenticación','login_exitoso','','::1','2026-10-14 02:23:29'),(54,9,'Autenticación','logout','','::1','2026-10-14 02:32:58'),(55,19,'Autenticación','login_exitoso','','::1','2026-10-14 02:33:04'),(56,19,'Autenticación','logout','','::1','2026-10-14 02:35:52'),(57,9,'Autenticación','login_exitoso','','::1','2026-10-14 02:35:58'),(58,9,'Autenticación','login_exitoso','','::1','2026-10-16 04:04:52'),(59,9,'Autenticación','login_exitoso','','::1','2026-10-16 05:42:29'),(60,9,'Préstamos','devolver_prestamo','préstamo id: 5 | libro: Harry Potter y la piedra filosofal (ISBN 978074753) | usuario: Denis Gomez (profesor, DNI 33333333) | estado del libro: bueno','::1','2026-10-16 05:43:11'),(61,9,'Reservas','cancelar_reserva','reserva id: 3','::1','2026-10-16 06:06:53'),(62,9,'Autenticación','login_exitoso','','::1','2026-10-16 20:29:19'),(63,9,'Autenticación','login_exitoso','','::1','2026-10-16 21:16:16');
 /*!40000 ALTER TABLE `auditoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -468,14 +468,23 @@ DROP TABLE IF EXISTS `multa`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `multa` (
   `id_multa` int NOT NULL AUTO_INCREMENT,
-  `monto` decimal(10,2) unsigned NOT NULL,
-  `fecha_multa` date NOT NULL,
-  `estado` tinyint NOT NULL,
-  `descripcion` varchar(500) DEFAULT NULL,
-  `id_alumno` int DEFAULT NULL,
+  `id_usuario` int NOT NULL,
+  `id_prestamo` int DEFAULT NULL,
+  `motivo` enum('retraso','rayado','maltratado','roto') NOT NULL,
+  `dias_sancion` int unsigned NOT NULL,
+  `fecha_inicio` datetime NOT NULL,
+  `fecha_fin` datetime NOT NULL,
+  `estado` enum('activa','anulada') NOT NULL DEFAULT 'activa',
+  `observaciones` varchar(500) DEFAULT NULL,
+  `id_registrador` int DEFAULT NULL,
+  `fecha_registro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_multa`),
-  KEY `id_alumno` (`id_alumno`),
-  CONSTRAINT `multa_ibfk_1` FOREIGN KEY (`id_alumno`) REFERENCES `alumno` (`id_alumno`)
+  KEY `idx_multa_usuario_vigencia` (`id_usuario`,`estado`,`fecha_fin`),
+  KEY `idx_multa_prestamo` (`id_prestamo`),
+  KEY `fk_multa_registrador` (`id_registrador`),
+  CONSTRAINT `fk_multa_prestamo` FOREIGN KEY (`id_prestamo`) REFERENCES `prestamo` (`id_prestamo`) ON DELETE SET NULL,
+  CONSTRAINT `fk_multa_registrador` FOREIGN KEY (`id_registrador`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL,
+  CONSTRAINT `fk_multa_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -691,7 +700,7 @@ CREATE TABLE `prestamo` (
   CONSTRAINT `fk_prestamo_estado` FOREIGN KEY (`id_estado`) REFERENCES `estado_prestamo` (`id_estado`),
   CONSTRAINT `fk_prestamo_libro` FOREIGN KEY (`id_libro`) REFERENCES `libro` (`id_libro`),
   CONSTRAINT `fk_prestamo_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -700,7 +709,7 @@ CREATE TABLE `prestamo` (
 
 LOCK TABLES `prestamo` WRITE;
 /*!40000 ALTER TABLE `prestamo` DISABLE KEYS */;
-INSERT INTO `prestamo` VALUES (1,507233,'2026-08-30 21:26:36','2026-09-06 21:26:36','2026-08-30 21:26:44',2,2,24),(2,615022,'2026-09-18 17:46:33','2026-09-25 17:46:33','2026-10-02 18:42:49',11,2,24),(3,360971,'2026-09-18 17:46:48','2026-09-25 17:46:48','2026-10-02 18:42:43',13,2,19),(4,691428,'2026-09-18 17:47:25','2026-09-25 17:47:25','2026-10-02 18:42:24',2,2,20);
+INSERT INTO `prestamo` VALUES (1,507233,'2026-08-30 21:26:36','2026-09-06 21:26:36','2026-08-30 21:26:44',2,2,24),(2,615022,'2026-09-18 17:46:33','2026-09-25 17:46:33','2026-10-02 18:42:49',11,2,24),(3,360971,'2026-09-18 17:46:48','2026-09-25 17:46:48','2026-10-02 18:42:43',13,2,19),(4,691428,'2026-09-18 17:47:25','2026-09-25 17:47:25','2026-10-02 18:42:24',2,2,20),(5,604515,'2026-10-13 17:56:16','2026-10-20 17:56:16','2026-10-16 00:43:11',2,2,21);
 /*!40000 ALTER TABLE `prestamo` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -971,7 +980,7 @@ CREATE TABLE `reserva` (
 
 LOCK TABLES `reserva` WRITE;
 /*!40000 ALTER TABLE `reserva` DISABLE KEYS */;
-INSERT INTO `reserva` VALUES (1,'2026-08-30 21:27:12','2026-08-30 21:27:12',847114,3,3,20),(2,'2026-09-18 17:47:45','2026-09-18 17:47:45',470181,10,3,19),(3,'2026-09-18 17:48:01','2026-09-18 17:48:01',250139,12,1,24);
+INSERT INTO `reserva` VALUES (1,'2026-08-30 21:27:12','2026-08-30 21:27:12',847114,3,3,20),(2,'2026-09-18 17:47:45','2026-09-18 17:47:45',470181,10,3,19),(3,'2026-09-18 17:48:01','2026-09-18 17:48:01',250139,12,3,24);
 /*!40000 ALTER TABLE `reserva` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1360,4 +1369,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-02 19:27:07
+-- Dump completed on 2026-10-16 16:19:07
