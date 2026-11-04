@@ -1,204 +1,111 @@
 <?php
-require_once dirname(__DIR__) . '/Core/AuthGuard.php';
-require_once dirname(__DIR__) . '/Modulos/ModuloRepository.php';
-require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
+session_start();
 
-AuthGuard::verificarRol(['alumno', 'profesor']);
+// AJUSTAR: usá los nombres de sesión que ya tenés en el login.
+if (!isset($_SESSION['id_usuario']) || !in_array($_SESSION['rol'] ?? '', ['alumno', 'profesor'], true)) {
+    header('Location: login.php');
+    exit;
+}
 
-$id_usuario = (int) $_SESSION['id_usuario'];
+$rol    = $_SESSION['rol'];
+$nombre = htmlspecialchars($_SESSION['nombre'] ?? 'Usuario', ENT_QUOTES, 'UTF-8');
 
-$moduloRepo = new ModuloRepository();
-$modulos    = $moduloRepo->obtenerMapaActivosPorUsuario($id_usuario);
-
-$libroRepo    = new LibroRepository();
-$busqueda     = $_GET["busqueda"] ?? "";
-$mostrartodos = isset($_GET["todos"]);
-$resultado    = $libroRepo->listarActivos($busqueda, $mostrartodos);
+// TODO: reemplazar por datos reales (modelo de préstamos).
+$prestamosActivos = 0;
+$proximaDevolucion = null; // 'd/m/Y' o null
+$limite = ($rol === 'alumno') ? 3 : null; // el profesor no tiene tope
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViBlio - Catálogo</title>
-    <link rel="stylesheet" href="style_menu.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .badge-disponible {
-            background-color: #d4edda; color: #155724;
-            border: 1px solid #c3e6cb; padding: 4px 10px;
-            border-radius: 20px; font-size: 12px; font-weight: bold;
-        }
-        .badge-no-disponible {
-            background-color: #f8d7da; color: #721c24;
-            border: 1px solid #f5c6cb; padding: 4px 10px;
-            border-radius: 20px; font-size: 12px; font-weight: bold;
-        }
-        .acceso-denegado {
-            text-align: center; padding: 60px 20px; color: #999;
-        }
-        .acceso-denegado ion-icon { font-size: 60px; color: #ddd; display: block; margin-bottom: 15px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ViBlio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href=" menu_usuario.css">
 </head>
 <body>
 
-    <div class="container">
-        <div class="titulo"><h1>ViBlio</h1></div>
-        <div class="Menu">
-            <ul>
-                <?php if ($modulos['catalogo'] ?? false): ?>
-                <li><a onclick="showtab('catalogo')"><ion-icon name="library-outline"></ion-icon>Catálogo</a></li>
-                <?php endif; ?>
-                <?php if ($modulos['prestamos'] ?? false): ?>
-                <li><a onclick="showtab('prestamos')"><ion-icon name="pricetag-outline"></ion-icon>Mis Préstamos</a></li>
-                <?php endif; ?>
-                <?php if ($modulos['reservas'] ?? false): ?>
-                <li><a onclick="showtab('reservas')"><ion-icon name="bookmark-outline"></ion-icon>Mis Reservas</a></li>
-                <?php endif; ?>
-                <li><a href="#" onclick="mdConfirm('¿Cerrar sesión?', function(){ window.location.href='logout.php'; })"><ion-icon name="log-out-outline"></ion-icon>Salir</a></li>
-            </ul>
-        </div>
+<div class="cinta" aria-hidden="true">ViBlio</div>
+
+<header class="barra-wrap">
+    <nav class="barra" aria-label="Navegación principal">
+        <button class="barra__btn" id="btnMenu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menuLateral">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <a href="catalogo.php">Libros</a>
+        <a href="mis_multas.php">Mis multas</a>
+        <a href="catalogo.php?buscar=1" class="barra__btn" aria-label="Buscar libros">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </a>
+    </nav>
+
+    <!-- Menú desplegable: perfil y cierre de sesión -->
+    <div class="menu-lateral" id="menuLateral" hidden>
+        <p class="menu-lateral__usuario"><?= $nombre ?> <span>(<?= $rol ?>)</span></p>
+        <a href="mi_perfil.php">Mi perfil</a>
+        <a href="logout.php">Cerrar sesión</a>
     </div>
+</header>
 
-    <div class="main_content">
+<main class="contenido">
+    <h1>¡Bienvenido, <?= $nombre ?>!</h1>
+    <p class="lema">Donde cada libro encuentra su lugar y cada lector, una nueva historia.</p>
 
-        <?php if ($modulos['catalogo'] ?? false): ?>
-        <div id="catalogo" class="tab_content">
-            <div class="encabezado">
-                <h2>Catálogo de Libros</h2>
-            </div>
-            <div class="content">
-                <h3>Libros disponibles</h3>
-
-
-
-           
-
-
-                <div class="box">
-                    <form method="GET">
-                        <input type="text" name="busqueda" placeholder="Buscar por título, autor, ISBN..." value="<?= htmlspecialchars($busqueda) ?>">
-                        <button><ion-icon name="search"></ion-icon></button>
-                        <button type="submit" name="todos">Todos</button>
-                    </form>
-
-
-                     
-
-
-
-                    
-                </div>
-                <div class="tabla">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ISBN</th><th>Título</th><th>Edición</th><th>Autor</th>
-                                <th>Editorial</th><th>Categoría</th><th>Género</th><th>Año</th><th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (count($resultado) > 0): ?>
-                                <?php foreach ($resultado as $fila): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($fila["isbn"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["titulo"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["edicion"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["autor"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["editorial"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["categoria"]) ?></td>
-                                    <td><?= htmlspecialchars($fila["genero"]) ?></td>
-                                    <td><?= htmlspecialchars((string) $fila["anio_publicacion"]) ?></td>
-                                    <td>
-                                        <?php if ($fila["estado"] == 1): ?>
-                                            <span class="badge-disponible">✓ Disponible</span>
-                                        <?php else: ?>
-                                            <span class="badge-no-disponible">✗ No disponible</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr><td colspan="9" style="text-align:center;padding:30px;color:#999;">No se encontraron libros.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <p class="resumen">
+        <?php if ($limite !== null): ?>
+            Tenés <strong><?= $prestamosActivos ?> de <?= $limite ?></strong> préstamos activos.
+        <?php else: ?>
+            Tenés <strong><?= $prestamosActivos ?></strong> préstamos activos.
         <?php endif; ?>
-
-        <?php if ($modulos['prestamos'] ?? false): ?>
-        <div id="prestamos" class="tab_content">
-            <div class="encabezado"><h2>Mis Préstamos</h2></div>
-            <div class="content">
-                <p style="color:#999;padding:20px;">Próximamente podrás ver tus préstamos activos aquí.</p>
-            </div>
-        </div>
+        <?php if ($proximaDevolucion): ?>
+            Próxima devolución: <strong><?= $proximaDevolucion ?></strong>.
         <?php endif; ?>
+    </p>
 
-        <?php if ($modulos['reservas'] ?? false): ?>
-        <div id="reservas" class="tab_content">
-            <div class="encabezado"><h2>Mis Reservas</h2></div>
-            <div class="content">
-                <p style="color:#999;padding:20px;">Próximamente podrás ver tus reservas aquí.</p>
-            </div>
-        </div>
-        <?php endif; ?>
+    <figure class="hero">
+        <img src="img/biblioteca.jpg" alt="Biblioteca con estantes de madera en forma curva">
+    </figure>
 
-        <?php if (empty(array_filter($modulos))): ?>
-        <div class="acceso-denegado">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            <h3>Sin módulos habilitados</h3>
-            <p>El bibliotecario aún no habilitó ninguna sección para tu cuenta.</p>
-        </div>
-        <?php endif; ?>
+    <h2 class="pregunta">¿Qué querés hacer hoy?</h2>
 
-
-
-
-
-        <?php if ($modulos['reservas'] ?? false): ?>
-        <div id="reservas" class="tab_content">
-            <div class="encabezado"><h2>Mis Reservas</h2></div>
-            <div class="content">
-                <p style="color:#999;padding:20px;">Próximamente podrás ver tus reservas aquí.</p>
-            </div>
-        </div>
-        <?php endif; ?>
-
-
-
-
-        
-
+    <div class="acciones">
+        <a class="accion" href="mis_prestamos.php">
+            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M5 4h13a1 1 0 0 1 1 1v15H6a1 1 0 0 1-1-1V4z"/><path d="M5 17h14"/></svg>
+            <span>Préstamos</span>
+        </a>
+        <a class="accion" href="mis_reservas.php">
+            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
+            <span>Reservas</span>
+        </a>
+        <a class="accion" href="historial.php">
+            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h6"/></svg>
+            <span>Historial</span>
+        </a>
     </div>
+</main>
 
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="script_alertas.js"></script>
-    <script>
-        function showtab(tabId) {
-            const tabs = document.querySelectorAll('.tab_content');
-            tabs.forEach(tab => tab.style.display = 'none');
-            const el = document.getElementById(tabId);
-            if (el) el.style.display = 'block';
-        }
+<footer class="pie">
+    <strong class="pie__marca">ViBlio</strong>
+    <div class="pie__fila">
+        <span>Contáctanos:</span>
+        <a href="mailto:contacto@viblio.com" aria-label="Correo">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </a>
+        <a href="sobre_nosotros.php" class="pie__info">Sobre nosotros</a>
+    </div>
+</footer>
 
-        window.onload = () => {
-            const primero = document.querySelector('.tab_content');
-            if (primero) primero.style.display = 'block';
-        };
-    </script>
-
-    <?php if (isset($_SESSION['alerta'])): 
-        $a = $_SESSION['alerta'];
-        unset($_SESSION['alerta']);
-    ?>
-    <script>
-        mdAlert('<?= $a['tipo'] ?>', '<?= $a['titulo'] ?>', '<?= addslashes($a['msg']) ?>');
-    </script>
-    <?php endif; ?>
-
+<script>
+    const btn = document.getElementById('btnMenu');
+    const menu = document.getElementById('menuLateral');
+    btn.addEventListener('click', () => {
+        const abierto = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!abierto));
+        menu.hidden = abierto;
+    });
+</script>
 </body>
 </html>
