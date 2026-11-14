@@ -1,0 +1,73 @@
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.aviso {
+  margin: 0 0 1rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--verde);
+  color: var(--texto);
+}
+.aviso--alerta { border-color: #a63d2f; background: #fbece9; }
+
+.buscador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.buscador input {
+  flex: 1 1 240px;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  border: 1px solid #b9d9cd;
+  border-radius: 12px;
+  background: #fff;
+}
+.buscador input:focus-visible { outline: 3px solid var(--verde-oscuro); outline-offset: 2px; }
+.buscador button,
+.libro__acciones button {
+  padding: 0.65rem 1.1rem;
+  font: inherit;
+  font-weight: 500;
+  color: #fff;
+  background: var(--verde-oscuro);
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.buscador button:hover,
+.libro__acciones button:hover:not(:disabled) { background: #00553c; }
+.buscador a { color: var(--verde-oscuro); font-size: 0.9rem; }
+
+.vacio { padding: 2rem 0; text-align: center; }
+
+.libros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.libro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.25rem;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+.libro__titulo { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.libro__autor { margin: 0; color: var(--verde-oscuro); font-weight: 500; }
+.libro__meta { margin: 0; font-size: 0.85rem; opacity: 0.8; }
+.libro__stock { margin: 0.5rem 0 0; font-size: 0.9rem; font-weight: 500; color: var(--verde-oscuro); }
+.libro__stock--agotado { color: #a63d2f; }
+
+.libro__acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: auto; padding-top: 0.75rem; }
+.btn-sec { background: #fff !important; color: var(--verde-oscuro) !important; border: 1px solid var(--verde-oscuro) !important; }
+.btn-sec:hover:not(:disabled) { background: var(--menta) !important; }
+.libro__acciones button:disabled { opacity: 0.45; cursor: not-allowed; }

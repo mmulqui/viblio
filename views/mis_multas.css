@@ -1,0 +1,14 @@
+/* Complementa a mis_prestamos.css (tarjetas y etiquetas). */
+.situacion {
+  margin: 0 0 0.5rem;
+  padding: 1.1rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--verde);
+  border-radius: 16px;
+}
+.situacion h2 { margin: 0 0 0.25rem; font-size: 1.1rem; font-weight: 600; color: var(--verde-oscuro); }
+.situacion p  { margin: 0; }
+.situacion--alerta { background: #fbece9; border-color: #a63d2f; }
+.situacion--alerta h2 { color: #862f24; }
+
+.nota { margin: 0 0 1rem; font-size: 0.875rem; opacity: 0.8; }

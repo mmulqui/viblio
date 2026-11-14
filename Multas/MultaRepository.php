@@ -38,6 +38,31 @@ class MultaRepository
         return $fila['hasta'] ?? null;
     }
 
+    /**
+     * Multas de un usuario (las suyas), de la más reciente a la más antigua.
+     * estado_calculado: 'vigente' | 'cumplida' | 'anulada'. La usa la vista del alumno/profesor.
+     */
+    public function listarPorUsuario(int $idUsuario): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT m.id_multa, m.motivo, m.dias_sancion, m.fecha_inicio, m.fecha_fin,
+                    m.observaciones, m.fecha_registro, l.titulo,
+                    CASE WHEN m.estado = 'anulada' THEN 'anulada'
+                         WHEN m.fecha_fin > NOW()  THEN 'vigente'
+                         ELSE 'cumplida' END AS estado_calculado
+             FROM multa m
+             LEFT JOIN prestamo pr ON pr.id_prestamo = m.id_prestamo
+             LEFT JOIN libro l     ON l.id_libro     = pr.id_libro
+             WHERE m.id_usuario = ?
+             ORDER BY m.fecha_registro DESC, m.id_multa DESC"
+        );
+        $stmt->bind_param('i', $idUsuario);
+        $stmt->execute();
+        $filas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $filas;
+    }
+
     /** Una multa con los datos del usuario y del libro (para auditoría y mensajes). */
     public function obtenerPorId(int $idMulta): ?array
     {

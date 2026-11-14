@@ -84,6 +84,13 @@ class ReservaController
     public function cancelar(): void
     {
         $idReserva = (int) ($_POST['id_reserva'] ?? $_GET['id_reserva'] ?? 0);
+
+        // Alumnos y profesores solo pueden cancelar sus propias reservas.
+        if (($_SESSION['rol'] ?? '') !== 'bibliotecario' && !$this->esDelUsuario($idReserva)) {
+            Auditoria::log('Reservas', 'cancelar_reserva_rechazada', "reserva id: $idReserva | no pertenece al usuario");
+            $this->alerta('warning', 'Ups', 'No podés cancelar esa reserva.');
+        }
+
         $error = $this->service->cancelarReserva($idReserva);
         if ($error === null) {
             Auditoria::log('Reservas', 'cancelar_reserva', "reserva id: $idReserva");
@@ -111,7 +118,30 @@ class ReservaController
 
     private function redirigir(): never
     {
-        header('Location: ../views/menu.php');
+        if (($_SESSION['rol'] ?? '') === 'bibliotecario') {
+            header('Location: ../views/menu.php');
+        } else {
+            header('Location: ../views/' . self::paginaDeRetorno());
+        }
         exit;
+    }
+
+    /** true si la reserva pertenece al usuario logueado. */
+    private function esDelUsuario(int $idReserva): bool
+    {
+        foreach ($this->repo->listarPorUsuario((int) $_SESSION['id_usuario']) as $r) {
+            if ((int) $r['id_reserva'] === $idReserva) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Página de usuario a la que se vuelve (llega en el form como "volver"; solo se aceptan estas). */
+    private static function paginaDeRetorno(): string
+    {
+        $permitidas = ['catalogo.php', 'mis_prestamos.php', 'mis_reservas.php', 'menu_usuario.php'];
+        $volver = (string) ($_POST['volver'] ?? '');
+        return in_array($volver, $permitidas, true) ? $volver : 'catalogo.php';
     }
 }

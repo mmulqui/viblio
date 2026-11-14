@@ -81,6 +81,17 @@ $busqueda_multas = trim($_GET['busqueda_multas'] ?? '');
 $estado_multas   = $_GET['estado_multas'] ?? '';
 $resultadoM      = $multaRepo->listar($busqueda_multas, $estado_multas);
 
+// Historial de ingresos de stock (filtros: texto, motivo y fechas)
+$ingresoRepo         = new IngresoStockRepository();
+$ingresosDisponible  = IngresoStockRepository::disponible(); // false si falta ejecutar ingreso_stock.sql
+$busqueda_ingresos   = trim($_GET['busqueda_ingresos'] ?? '');
+$motivo_ingresos     = $_GET['motivo_ingresos'] ?? '';
+$desde_ingresos      = $_GET['desde_ingresos'] ?? '';
+$hasta_ingresos      = $_GET['hasta_ingresos'] ?? '';
+$resultadoI          = $ingresosDisponible
+    ? $ingresoRepo->listar($busqueda_ingresos, $motivo_ingresos, $desde_ingresos, $hasta_ingresos)
+    : [];
+
 // Usuarios activos (alumnos y profesores), para los selects de los modales de Agregar Prestamo/Reserva
 $usuariosDisponibles = array_filter($resultadoU, fn($u) => in_array($u['rol'], ['alumno', 'profesor'], true));
 
@@ -95,6 +106,7 @@ $pagPrestamos = Paginator::desdeGet('pag_prestamos', 'prestamos', count($resulta
 $pagReservas  = Paginator::desdeGet('pag_reservas',  'reservas',  count($resultadoR));
 $pagPerfiles  = Paginator::desdeGet('pag_perfiles',  'perfiles',  count($perfiles));
 $pagMultas    = Paginator::desdeGet('pag_multas',    'multas',    count($resultadoM));
+$pagIngresos  = Paginator::desdeGet('pag_ingresos',  'ingresos',  count($resultadoI));
 
 $usuariosPagina  = $pagUsuarios->slice($resultadoU);
 $librosPagina    = $pagLibros->slice($resultado);
@@ -102,9 +114,10 @@ $prestamosPagina = $pagPrestamos->slice($resultadoP);
 $reservasPagina  = $pagReservas->slice($resultadoR);
 $perfilesPagina  = $pagPerfiles->slice($perfiles);
 $multasPagina    = $pagMultas->slice($resultadoM);
+$ingresosPagina  = $pagIngresos->slice($resultadoI);
 
 // Pestaña a reabrir al recargar (paginación, búsquedas y filtro de auditoría)
-$tabsValidas = ['usuario', 'libros', 'prestamos', 'reservas', 'multas', 'perfiles', 'auditoria', 'estadisticas', 'ayuda'];
+$tabsValidas = ['usuario', 'libros', 'ingresos', 'prestamos', 'reservas', 'multas', 'perfiles', 'auditoria', 'estadisticas', 'ayuda'];
 $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
     ? $_GET['tab']
     : (isset($_GET['aud_filtrar']) ? 'auditoria' : '');
@@ -146,6 +159,7 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
             <ul>
                 <li><a onclick="showtab('usuario')"><ion-icon name="person-outline"></ion-icon>Usuarios</a></li>
                 <li><a onclick="showtab('libros')"><ion-icon name="library-outline"></ion-icon>Libros</a></li>
+                <li><a onclick="showtab('ingresos')"><ion-icon name="receipt-outline"></ion-icon>Ingresos</a></li>
                 <li><a onclick="showtab('prestamos')"><ion-icon name="pricetag-outline"></ion-icon>Prestamos</a></li>
                 <li><a onclick="showtab('reservas')"><ion-icon name="bookmark-outline"></ion-icon>Reservas</a></li>
                 <li><a onclick="showtab('multas')"><ion-icon name="warning-outline"></ion-icon>Multas</a></li>
@@ -284,43 +298,12 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
                     <button onclick="abrirAgregarStock()" class="btn-agregar">
                         <ion-icon name="layers-outline"></ion-icon> Agregar Stock
                     </button>
+                    <button onclick="showtab('ingresos')" class="btn-agregar">
+                        <ion-icon name="receipt-outline"></ion-icon> Historial de Stock
+                    </button>
                     <button onclick="abrirModal('modalAgregarLibro')" class="btn-agregar">
                         <ion-icon name="add-circle-outline"></ion-icon> Agregar Libro
                     </button>
-                </div>
-            </div>
-            <div id="modalAgregarStock" class="modal">
-                <div class="modal-contenido">
-                    <span class="cerrar" onclick="cerrarModal('modalAgregarStock')">&times;</span>
-                    <h2>Agregar stock</h2>
-                    <form action="../controlers/agregar_stock.php" method="POST">
-                        <div class="form-grid" style="grid-template-columns: 1fr;">
-                            <div class="form-group">
-                                <label>Libro:</label>
-                                <select name="id_libro" id="stock_id_libro" required onchange="actualizarVistaStock()">
-                                    <option value="">Seleccionar libro...</option>
-                                    <?php foreach ($librosParaStock as $l): ?>
-                                    <option value="<?= (int) $l['id_libro'] ?>" data-stock="<?= (int) $l['stock'] ?>">
-                                        <?= htmlspecialchars($l['titulo'] . ' (ISBN ' . $l['isbn'] . ') - stock actual: ' . (int) $l['stock']) ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Stock nuevo (ejemplares que ingresan):</label>
-                                <input type="number" name="cantidad" id="stock_cantidad" value="1" min="1" max="<?= (int) LibroRepository::MAX_STOCK_POR_CARGA ?>" required oninput="actualizarVistaStock()">
-                            </div>
-                            <div class="form-group">
-                                <label>Procedencia / comentario (opcional):</label>
-                                <textarea name="procedencia" id="stock_procedencia" maxlength="255" rows="3" placeholder="Ej.: donación de la Biblioteca Popular, compra a Editorial X, remito 123..."></textarea>
-                            </div>
-                        </div>
-                        <p id="stock_vista" style="margin:10px 0 0;font-size:13px;color:#0d9469;"></p>
-                        <div class="form-buttons">
-                            <button type="submit" class="btn-guardar">Agregar stock</button>
-                            <button type="button" onclick="cerrarModal('modalAgregarStock')" class="btn-cancelar">Cancelar</button>
-                        </div>
-                    </form>
                 </div>
             </div>
             <div id="modalAgregarLibro" class="modal">
@@ -449,6 +432,109 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
 
 
 
+        <div id="ingresos" class="tab_content">
+            <div class="encabezado">
+                <h2>Historial de Stock</h2>
+                <button onclick="abrirAgregarStock()" class="btn-agregar">
+                    <ion-icon name="layers-outline"></ion-icon> Agregar Stock
+                </button>
+            </div>
+            <div class="content">
+                <h3>Ingresos de stock</h3>
+                <p style="flex:1 1 100%;margin:0 0 12px;font-size:13px;color:#666;">
+                    Cada vez que se agrega stock queda un registro: qué libro, cuántos ejemplares, el stock antes y después,
+                    el motivo, de dónde vienen y, en las compras, la boleta.
+                </p>
+                <?php if (!$ingresosDisponible): ?>
+                <p style="flex:1 1 100%;color:#c0392b;font-weight:bold;">
+                    Falta crear la tabla del historial: ejecutá el archivo ingreso_stock.sql en la base de datos.
+                </p>
+                <?php else: ?>
+                <form method="GET" class="filtro-auditoria">
+                    <input type="hidden" name="tab" value="ingresos">
+                    <div>
+                        <label for="busqueda_ingresos">Buscar</label>
+                        <input type="text" name="busqueda_ingresos" id="busqueda_ingresos" placeholder="Libro, ISBN o procedencia..." value="<?= htmlspecialchars($busqueda_ingresos) ?>">
+                    </div>
+                    <div>
+                        <label for="motivo_ingresos">Motivo</label>
+                        <select name="motivo_ingresos" id="motivo_ingresos">
+                            <option value="">Todos</option>
+                            <?php foreach (IngresoStockRepository::MOTIVOS as $valor => $texto): ?>
+                            <option value="<?= htmlspecialchars($valor) ?>" <?= $motivo_ingresos === $valor ? 'selected' : '' ?>><?= htmlspecialchars($texto) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="desde_ingresos">Desde</label>
+                        <input type="date" name="desde_ingresos" id="desde_ingresos" value="<?= htmlspecialchars($desde_ingresos) ?>">
+                    </div>
+                    <div>
+                        <label for="hasta_ingresos">Hasta</label>
+                        <input type="date" name="hasta_ingresos" id="hasta_ingresos" value="<?= htmlspecialchars($hasta_ingresos) ?>">
+                    </div>
+                    <button type="submit">Filtrar</button>
+                    <a class="limpiar" href="menu.php?tab=ingresos">Limpiar</a>
+                </form>
+                <div class="tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Libro</th>
+                                <th>Motivo</th>
+                                <th>Cantidad</th>
+                                <th>Stock</th>
+                                <th>Procedencia / comentario</th>
+                                <th>Registrado por</th>
+                                <th>Boleta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($ingresosPagina)): ?>
+                            <tr><td colspan="8" style="text-align:center;">
+                                <?= ($busqueda_ingresos !== '' || $motivo_ingresos !== '' || $desde_ingresos !== '' || $hasta_ingresos !== '')
+                                    ? 'No hay ingresos que coincidan con el filtro.'
+                                    : 'Todavía no se agregó stock desde el botón "Agregar Stock".' ?>
+                            </td></tr>
+                            <?php endif; ?>
+                            <?php foreach ($ingresosPagina as $i): ?>
+                            <tr>
+                                <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($i['fecha']))) ?></td>
+                                <td><?= htmlspecialchars($i['titulo_libro']) ?><br><small style="color:#888;">ISBN <?= htmlspecialchars($i['isbn']) ?></small></td>
+                                <td><?= htmlspecialchars(IngresoStockRepository::MOTIVOS[$i['motivo']] ?? $i['motivo']) ?></td>
+                                <td><strong style="color:#27ae60;">+<?= (int) $i['cantidad'] ?></strong></td>
+                                <td><?= (int) $i['stock_anterior'] ?> &rarr; <?= (int) $i['stock_nuevo'] ?></td>
+                                <td><?= htmlspecialchars($i['procedencia'] ?? '') ?></td>
+                                <td><?= htmlspecialchars(trim(($i['nombre'] ?? '') . ' ' . ($i['apellido'] ?? '')) ?: '-') ?></td>
+                                <td class="acciones">
+                                    <?php if ((int) $i['tiene_boleta'] === 1): ?>
+                                    <button type="button" class="btn-modificar" title="Ver boleta"
+                                        data-id="<?= (int) $i['id_ingreso'] ?>"
+                                        onclick="verBoleta(this)">
+                                        <ion-icon name="image-outline"></ion-icon>
+                                    </button>
+                                    <?php else: ?>
+                                        <span>-</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?= $pagIngresos->render() ?>
+                <?php endif; ?>
+            </div>
+            <div id="modalBoleta" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarBoleta()">&times;</span>
+                    <h2>Boleta de la compra</h2>
+                    <img id="boleta_img" alt="Boleta de la compra" style="display:block;max-width:100%;max-height:70vh;margin:0 auto;border:1px solid #ddd;border-radius:6px;">
+                    <p style="text-align:center;margin:10px 0 0;font-size:13px;"><a id="boleta_enlace" href="#" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
+                </div>
+            </div>
+        </div>
         <div id="prestamos" class="tab_content">
             <div class="encabezado">
                 <h2>Gestion de Prestamos</h2>
@@ -1132,6 +1218,53 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
             </form>
         </div>
     </div>
+    <div id="modalAgregarStock" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal('modalAgregarStock')">&times;</span>
+            <h2>Agregar stock</h2>
+            <form action="../controlers/agregar_stock.php" method="POST" enctype="multipart/form-data">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label>Libro:</label>
+                        <select name="id_libro" id="stock_id_libro" required onchange="actualizarVistaStock()">
+                            <option value="">Seleccionar libro...</option>
+                            <?php foreach ($librosParaStock as $l): ?>
+                            <option value="<?= (int) $l['id_libro'] ?>" data-stock="<?= (int) $l['stock'] ?>">
+                                <?= htmlspecialchars($l['titulo'] . ' (ISBN ' . $l['isbn'] . ') - stock actual: ' . (int) $l['stock']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock nuevo (ejemplares que ingresan):</label>
+                        <input type="number" name="cantidad" id="stock_cantidad" value="1" min="1" max="<?= (int) LibroRepository::MAX_STOCK_POR_CARGA ?>" required oninput="actualizarVistaStock()">
+                    </div>
+                    <div class="form-group">
+                        <label>Motivo del ingreso:</label>
+                        <select name="motivo" id="stock_motivo" onchange="actualizarMotivoStock()">
+                            <?php foreach (IngresoStockRepository::MOTIVOS as $valor => $texto): ?>
+                            <option value="<?= htmlspecialchars($valor) ?>"><?= htmlspecialchars($texto) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group" id="stock_boleta_grupo">
+                        <label>Boleta de la compra (imagen, opcional):</label>
+                        <input type="file" name="boleta" id="stock_boleta" accept="image/jpeg,image/png,image/webp" onchange="verificarBoleta()">
+                        <small style="color:#888;font-size:11px;">JPG, PNG o WEBP, hasta 8 MB. Se reduce automáticamente al guardarla.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Procedencia / comentario (opcional):</label>
+                        <textarea name="procedencia" id="stock_procedencia" maxlength="255" rows="3" placeholder="Ej.: donación de la Biblioteca Popular, compra a Editorial X, remito 123..."></textarea>
+                    </div>
+                </div>
+                <p id="stock_vista" style="margin:10px 0 0;font-size:13px;color:#0d9469;"></p>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-guardar">Agregar stock</button>
+                    <button type="button" onclick="cerrarModal('modalAgregarStock')" class="btn-cancelar">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="modalmodificarLibro" class="modal">
         <div class="modal-contenido">
             <span class="cerrar" onclick="cerrarModal('modalmodificarLibro')">&times;</span>
@@ -1273,9 +1406,50 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
         function abrirAgregarStock() {
             document.getElementById('stock_id_libro').value = '';
             document.getElementById('stock_cantidad').value = 1;
+            document.getElementById('stock_motivo').value = 'compra';
             document.getElementById('stock_procedencia').value = '';
+            actualizarMotivoStock();
             actualizarVistaStock();
             abrirModal('modalAgregarStock');
+        }
+
+        // La boleta solo se pide cuando el ingreso es una compra.
+        function actualizarMotivoStock() {
+            const esCompra = document.getElementById('stock_motivo').value === 'compra';
+            document.getElementById('stock_boleta_grupo').style.display = esCompra ? '' : 'none';
+            if (!esCompra) {
+                document.getElementById('stock_boleta').value = '';
+            }
+        }
+
+        // Avisa enseguida si el archivo no es una imagen o es demasiado grande (el servidor lo vuelve a comprobar).
+        function verificarBoleta() {
+            const input = document.getElementById('stock_boleta');
+            const archivo = input.files[0];
+            if (!archivo) return;
+            let problema = '';
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+                problema = 'La boleta tiene que ser una imagen JPG, PNG o WEBP.';
+            } else if (archivo.size > 8 * 1024 * 1024) {
+                problema = 'La imagen es demasiado grande (máximo 8 MB).';
+            }
+            if (problema) {
+                input.value = '';
+                Swal.fire({ icon: 'warning', title: 'Ups', text: problema });
+            }
+        }
+
+        // ----- Ver la boleta de un ingreso -----
+        function verBoleta(boton) {
+            const url = '../controlers/ver_boleta.php?id=' + encodeURIComponent(boton.dataset.id);
+            document.getElementById('boleta_img').src = url;
+            document.getElementById('boleta_enlace').href = url;
+            abrirModal('modalBoleta');
+        }
+
+        function cerrarBoleta() {
+            document.getElementById('boleta_img').removeAttribute('src');
+            cerrarModal('modalBoleta');
         }
 
         function actualizarVistaStock() {

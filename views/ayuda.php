@@ -40,9 +40,20 @@ $diasDanio = MultaService::DIAS_POR_DANIO;
                 <div class="ayuda-cuerpo">
                     <p><strong>Agregar un libro:</strong> tocá "Agregar Libro" y completá ISBN, título, año y stock. El resto de los datos es opcional al crearlo.</p>
                     <p><strong>Stock:</strong> es la cantidad de ejemplares que tiene la biblioteca. Si llega a 0, el libro se muestra como "(No disponible)".</p>
-                    <p><strong>Agregar stock:</strong> cuando llegan ejemplares nuevos, tocá "Agregar Stock", elegí el libro, indicá cuántos ejemplares ingresan y, si querés, de dónde vienen (compra, donación, etc.). Esos ejemplares se suman al stock actual y la procedencia queda registrada en la Auditoría. Si el libro estaba sin stock, vuelve a figurar como disponible.</p>
+                    <p><strong>Agregar stock:</strong> cuando llegan ejemplares nuevos, tocá "Agregar Stock", elegí el libro, indicá cuántos ejemplares ingresan, el motivo (compra, donación u otro) y, si querés, de dónde vienen. Esos ejemplares se suman al stock actual y el ingreso queda guardado en la pestaña Ingresos. Si el libro estaba sin stock, vuelve a figurar como disponible.</p>
+                    <p><strong>Boleta de una compra:</strong> si el motivo es "Compra", aparece la opción de subir la imagen de la boleta (JPG, PNG o WEBP, hasta 8 MB). Es opcional; la imagen se reduce sola al guardarla y se puede ver después desde el historial.</p>
                     <p><strong>Modificar:</strong> cambia los datos del libro (título, autor, editorial, etc.), pero no el stock: para eso está "Agregar Stock". El ISBN no se puede cambiar. Para corregirlo, eliminá el libro y volvé a cargarlo.</p>
                     <p><strong>Buscar y exportar:</strong> funcionan igual que en Usuarios.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary><ion-icon name="receipt-outline"></ion-icon> Ingresos</summary>
+                <div class="ayuda-cuerpo">
+                    <p>Es el historial de todo el stock que se agregó con el botón "Agregar Stock". Cada fila muestra la fecha, el libro, el motivo, cuántos ejemplares ingresaron, el stock antes y después, la procedencia o comentario y quién lo cargó.</p>
+                    <p><strong>Ver la boleta:</strong> en las compras que tienen imagen, tocá el botón de la imagen de la última columna. Se abre en una ventana y también podés abrirla en una pestaña nueva.</p>
+                    <p><strong>Buscar:</strong> podés filtrar por libro, ISBN o procedencia, por motivo y por rango de fechas. "Limpiar" quita los filtros.</p>
+                    <p>El historial se conserva aunque después se elimine el libro. Es solo de consulta: un ingreso cargado no se puede borrar ni modificar.</p>
                 </div>
             </details>
 

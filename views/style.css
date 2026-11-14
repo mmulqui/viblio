@@ -24,12 +24,10 @@ body{
 }
 
 .container-form{
-    
     width: 100%;
 }
 
 .container-form-2{
-    
     width: 100%;
 }
 
@@ -91,13 +89,13 @@ form .container-input{
     transition: .5s;
 }
 
+/* La etiqueta sube cuando el campo tiene foco o ya tiene texto (los inputs son "required") */
 .container-input input:focus ~ label,
-.container-input input:focus ~ label{
+.container-input input:valid ~ label{
     top: -5px;
     color: #3F3F46;
 }
 
-.container-input input:focus ~ span::before,
 .container-input input:focus ~ span::before{
     width: 100%;
 }
@@ -152,7 +150,98 @@ input[type="button"]{
     margin-top: 10px;
 }
 
+.recordar a{
+    color: #0d9469;
+}
 
 
+/* ============================================================
+   CELULAR / TABLET CHICA
+   El panel verde pasa arriba (cabecera con borde curvo) y el
+   formulario queda debajo, a todo el ancho de la pantalla.
+   ============================================================ */
+@media (max-width: 820px){
 
+    body{
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: stretch;
+    }
 
+    .container{
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        flex-direction: column;
+    }
+
+    /* Cabecera verde: ViBlio + acceso al registro */
+    .container-form-2{
+        order: -1;
+        flex: none;
+        border-radius: 0 0 50% 50% / 0 0 40px 40px;
+    }
+
+    .container-form-2 form{
+        height: auto;
+        padding: 32px 20px 44px;
+    }
+
+    .container-form-2 h1{
+        font-size: 34px;
+        margin-bottom: 6px;
+    }
+
+    .texto_registro{
+        font-size: 15px;
+        margin: 0 0 14px;
+        text-align: center;
+    }
+
+    input[type="button"]{
+        width: 200px;
+        height: 44px;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    /* Formulario de inicio de sesión */
+    .container-form{
+        flex: 1;
+        display: flex;
+    }
+
+    .container-form form{
+        flex: 1;
+        height: auto;
+        padding: 28px 24px;
+    }
+
+    .container-form h2{
+        margin-bottom: 8px;
+    }
+
+    form .container-input{
+        width: 100%;
+        max-width: 340px;
+        margin: 24px 0;
+    }
+
+    .container-input input{
+        width: 100%;
+    }
+
+    input[type="submit"]{
+        width: 100%;
+        max-width: 340px;
+        margin-bottom: 24px;
+    }
+
+    .recordar{
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+}

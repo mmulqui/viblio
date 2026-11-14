@@ -1,0 +1,17 @@
+/* Complementa a mis_prestamos.css (las tarjetas y etiquetas son las mismas). */
+.acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.acciones form { margin: 0; }
+
+.btn-cancelar {
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #862f24;
+  background: #fff;
+  border: 1px solid #a63d2f;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.btn-cancelar:hover { background: #fbece9; }
+.btn-cancelar:focus-visible { outline: 3px solid #a63d2f; outline-offset: 2px; }

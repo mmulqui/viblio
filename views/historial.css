@@ -1,0 +1,23 @@
+/* Complementa a mis_prestamos.css (tarjetas y etiquetas). */
+.filtros { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.filtros a {
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--verde-oscuro);
+  background: #fff;
+  border: 1px solid var(--verde-oscuro);
+  border-radius: 999px;
+}
+.filtros a:hover { background: var(--menta); }
+.filtros a.is-activo { color: #fff; background: var(--verde-oscuro); }
+
+.mes { text-transform: capitalize; }
+.tipo {
+  margin: 0 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--verde-oscuro);
+}

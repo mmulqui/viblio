@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/Core/Database.php';
+require_once __DIR__ . '/IngresoStockRepository.php';
 
 
 class LibroRepository
@@ -165,15 +166,26 @@ class LibroRepository
     }
 
     /**
-     * Suma ejemplares al stock de un libro (ingreso de libros: compra, donación, etc.).
+     * Suma ejemplares al stock de un libro (ingreso de libros: compra, donación, etc.) y deja
+     * el registro en el historial (ingreso_stock), con la boleta si la hay. Todo en una
+     * transacción: o se guardan el stock y su registro, o no se guarda nada.
      * El trigger libro_bu recalcula "estado" a partir del stock, así que un libro sin
      * stock vuelve a quedar disponible.
      *
-     * @return array{titulo:string, isbn:string, stock_anterior:int, stock_nuevo:int}|null
+     * @param string|null $boleta     Imagen de la boleta ya procesada (bytes), solo en compras.
+     * @param string|null $boletaTipo Tipo de la imagen, ej. image/jpeg.
+     * @return array{id_ingreso:int, titulo:string, isbn:string, stock_anterior:int, stock_nuevo:int}|null
      *         null si el libro no existe o no se pudo guardar.
      */
-    public function agregarStock(int $idLibro, int $cantidad): ?array
-    {
+    public function agregarStock(
+        int $idLibro,
+        int $cantidad,
+        string $motivo = 'otro',
+        ?string $procedencia = null,
+        ?string $boleta = null,
+        ?string $boletaTipo = null,
+        ?int $idRegistrador = null
+    ): ?array {
         $this->db->begin_transaction();
         try {
             $stmt = $this->db->prepare("SELECT titulo, isbn, stock FROM libro WHERE id_libro = ? FOR UPDATE");
@@ -191,12 +203,28 @@ class LibroRepository
             $stmt->execute();
             $stmt->close();
 
+            $stockAnterior = (int) $libro['stock'];
+            $stockNuevo    = $stockAnterior + $cantidad;
+
+            $idIngreso = (new IngresoStockRepository())->registrar(
+                ['id_libro' => $idLibro, 'titulo' => $libro['titulo'], 'isbn' => $libro['isbn']],
+                $cantidad,
+                $stockAnterior,
+                $stockNuevo,
+                $motivo,
+                ($procedencia !== null && $procedencia !== '') ? $procedencia : null,
+                $boleta,
+                $boleta !== null ? $boletaTipo : null,
+                $idRegistrador
+            );
+
             $this->db->commit();
             return [
+                'id_ingreso'     => $idIngreso,
                 'titulo'         => $libro['titulo'],
                 'isbn'           => $libro['isbn'],
-                'stock_anterior' => (int) $libro['stock'],
-                'stock_nuevo'    => (int) $libro['stock'] + $cantidad,
+                'stock_anterior' => $stockAnterior,
+                'stock_nuevo'    => $stockNuevo,
             ];
         } catch (Throwable $e) {
             $this->db->rollback();

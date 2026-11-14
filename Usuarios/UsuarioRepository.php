@@ -202,6 +202,53 @@ class UsuarioRepository
         return $okP && $okU;
     }
 
+    // ─── Autoservicio: lo que el propio usuario puede cambiar de su cuenta ────
+    // (a propósito NO toca rol, DNI ni activo: eso solo lo cambia el bibliotecario)
+
+    /** Hash de la contraseña actual, para verificarla antes de un cambio sensible. */
+    public function obtenerHashContrasenia(int $idUsuario): ?string
+    {
+        $stmt = $this->db->prepare("SELECT `contraseña` AS hash FROM usuario WHERE id_usuario = ? LIMIT 1");
+        $stmt->bind_param('i', $idUsuario);
+        $stmt->execute();
+        $fila = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $fila['hash'] ?? null;
+    }
+
+    /** Actualiza nombre, apellido y fecha de nacimiento del propio usuario. */
+    public function actualizarDatosPersonales(int $idUsuario, string $nombre, string $apellido, string $fechaNacimiento): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE persona p
+             JOIN usuario u ON u.persona_id_persona = p.id_persona
+             SET p.nombre = ?, p.apellido = ?, p.fecha_nacimiento = ?
+             WHERE u.id_usuario = ?"
+        );
+        $stmt->bind_param('sssi', $nombre, $apellido, $fechaNacimiento, $idUsuario);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
+    public function actualizarEmail(int $idUsuario, string $email): bool
+    {
+        $stmt = $this->db->prepare("UPDATE usuario SET email = ? WHERE id_usuario = ?");
+        $stmt->bind_param('si', $email, $idUsuario);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
+    public function actualizarContrasenia(int $idUsuario, string $hash): bool
+    {
+        $stmt = $this->db->prepare("UPDATE usuario SET `contraseña` = ? WHERE id_usuario = ?");
+        $stmt->bind_param('si', $hash, $idUsuario);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
     /** Baja lógica: pone activo = 0 al usuario con ese DNI. */
     public function darBajaLogica(string $dni): bool
     {

@@ -147,7 +147,19 @@ class PrestamoController
     /** $tab = pestaña de menu.php que se reabre al volver (vacío = la de inicio). */
     private function redirigir(string $tab = ''): never
     {
-        header('Location: ../views/menu.php' . ($tab !== '' ? '?tab=' . urlencode($tab) : ''));
+        if (($_SESSION['rol'] ?? '') === 'bibliotecario') {
+            header('Location: ../views/menu.php' . ($tab !== '' ? '?tab=' . urlencode($tab) : ''));
+        } else {
+            header('Location: ../views/' . self::paginaDeRetorno());
+        }
         exit;
+    }
+
+    /** Página de usuario a la que se vuelve (llega en el form como "volver"; solo se aceptan estas). */
+    private static function paginaDeRetorno(): string
+    {
+        $permitidas = ['catalogo.php', 'mis_prestamos.php', 'mis_reservas.php', 'menu_usuario.php'];
+        $volver = (string) ($_POST['volver'] ?? '');
+        return in_array($volver, $permitidas, true) ? $volver : 'catalogo.php';
     }
 }

@@ -3,6 +3,7 @@ require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Core/Auditoria.php';
 require_once dirname(__DIR__) . '/Libros/Libro.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
+require_once dirname(__DIR__) . '/Libros/BoletaImagen.php';
 
 class LibroController
 {
@@ -59,8 +60,9 @@ class LibroController
     }
 
     /**
-     * Suma ejemplares al stock de un libro. La procedencia (compra, donación, etc.)
-     * es opcional y queda registrada en la auditoría.
+     * Suma ejemplares al stock de un libro y deja el ingreso registrado en el historial.
+     * El motivo (compra, donación u otro) y la procedencia son informativos; si es una compra
+     * se puede adjuntar la imagen de la boleta.
      */
     public function agregarStock(): void
     {
@@ -68,8 +70,19 @@ class LibroController
             $this->redirigir();
         }
 
+        // Si el archivo supera post_max_size, PHP descarta todo el formulario.
+        if (empty($_POST) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+            $this->alerta('warning', 'Ups', 'La imagen de la boleta es demasiado grande. Subí una de hasta '
+                . (BoletaImagen::MAX_SUBIDA_BYTES / 1048576) . ' MB.');
+            return;
+        }
+
         $idLibro  = (int) ($_POST['id_libro'] ?? 0);
         $cantidad = (string) ($_POST['cantidad'] ?? '');
+        $motivo   = (string) ($_POST['motivo'] ?? 'otro');
+        if (!isset(IngresoStockRepository::MOTIVOS[$motivo])) {
+            $motivo = 'otro';
+        }
 
         $procedencia = trim((string) ($_POST['procedencia'] ?? ''));
         if (preg_match('/^.{0,255}/su', $procedencia, $corte)) { // máx. 255 caracteres, sin cortar UTF-8
@@ -86,7 +99,27 @@ class LibroController
         }
         $cantidad = (int) $cantidad;
 
-        $r = $this->repo->agregarStock($idLibro, $cantidad);
+        if (!IngresoStockRepository::disponible()) {
+            $this->alerta('error', 'Falta actualizar la base', 'Falta crear la tabla del historial de ingresos: ejecutá ingreso_stock.sql en la base de datos.');
+            return;
+        }
+
+        // La boleta solo se acepta en las compras; se valida y reduce antes de tocar la base.
+        $boleta     = null;
+        $boletaTipo = null;
+        if ($motivo === 'compra') {
+            $imagen = BoletaImagen::procesar($_FILES['boleta'] ?? null);
+            if (!$imagen['ok']) {
+                $this->alerta('warning', 'Ups', $imagen['error']);
+                return;
+            }
+            if (!$imagen['vacio']) {
+                $boleta     = $imagen['datos'];
+                $boletaTipo = $imagen['mime'];
+            }
+        }
+
+        $r = $this->repo->agregarStock($idLibro, $cantidad, $motivo, $procedencia, $boleta, $boletaTipo, (int) $_SESSION['id_usuario']);
         if ($r === null) {
             $this->alerta('error', 'Error', 'No se pudo agregar el stock (verificá que el libro exista).');
             return;
@@ -96,7 +129,10 @@ class LibroController
             'Libros',
             'agregar_stock',
             "{$r['titulo']} (ISBN {$r['isbn']}) | +$cantidad ejemplar(es) (stock {$r['stock_anterior']} → {$r['stock_nuevo']})"
+                . ' | motivo: ' . IngresoStockRepository::MOTIVOS[$motivo]
+                . ($boleta !== null ? ' | con boleta' : '')
                 . ($procedencia !== '' ? " | procedencia: $procedencia" : '')
+                . " | ingreso id: {$r['id_ingreso']}"
         );
         $this->alerta('success', '¡Éxito!', "Se agregaron $cantidad ejemplar(es) a \"{$r['titulo']}\". Stock actual: {$r['stock_nuevo']}.");
     }

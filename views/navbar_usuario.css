@@ -1,0 +1,183 @@
+:root {
+  --verde: #008a62;
+  --verde-oscuro: #006b4c;
+  --menta: #c6eddf;
+  --texto: #12211b;
+  --item-size: 3.5rem;
+  --items: 7;
+}
+
+/* ---------- Escritorio: barra lateral ---------- */
+.navbar {
+  position: fixed;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.navbar__menu {
+  --n: 0;
+  --sx: 0.5;
+  --sy: 1.5;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navbar__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: var(--item-size);
+  color: var(--verde-oscuro);
+  text-decoration: none;
+  transition: color 250ms ease;
+}
+
+.navbar__item:hover .navbar__link,
+.navbar__item:focus-within .navbar__link {
+  color: #fff;
+}
+
+.navbar__link:focus-visible { outline: none; }
+
+/* Etiqueta flotante */
+.navbar__link span {
+  position: absolute;
+  left: 100%;
+  margin-left: 1rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--texto);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-2rem);
+  transition: 250ms ease all;
+}
+
+.navbar__item:hover span,
+.navbar__item:focus-within span {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Página actual */
+.navbar__link.is-active { color: var(--verde); }
+.navbar__link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 0.35rem;
+  width: 4px;
+  height: 1.5rem;
+  border-radius: 4px;
+  background: var(--verde);
+}
+
+/* Resaltado que se desliza */
+.navbar__menu::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--item-size) * var(--n));
+  left: 1rem;
+  z-index: -1;
+  width: var(--item-size);
+  height: var(--item-size);
+  background: var(--verde);
+  border-radius: 10px;
+  opacity: 0;
+  transition: 250ms cubic-bezier(1, 0.2, 0.1, 1.2) all;
+}
+
+.navbar__menu:has(.navbar__item:is(:hover, :focus-within))::before { opacity: 1; }
+
+.navbar__menu:has(.navbar__item:nth-child(1):is(:hover, :focus-within)) { --n: 0; }
+.navbar__menu:has(.navbar__item:nth-child(2):is(:hover, :focus-within)) { --n: 1; }
+.navbar__menu:has(.navbar__item:nth-child(3):is(:hover, :focus-within)) { --n: 2; }
+.navbar__menu:has(.navbar__item:nth-child(4):is(:hover, :focus-within)) { --n: 3; }
+.navbar__menu:has(.navbar__item:nth-child(5):is(:hover, :focus-within)) { --n: 4; }
+.navbar__menu:has(.navbar__item:nth-child(6):is(:hover, :focus-within)) { --n: 5; }
+.navbar__menu:has(.navbar__item:nth-child(7):is(:hover, :focus-within)) { --n: 6; }
+
+/* Efecto "gooey" (nombres distintos para que se repita entre ítems) */
+.navbar__menu:has(.navbar__item:nth-child(odd):is(:hover, :focus-within))::before  { animation: gooeyA 250ms 1; }
+.navbar__menu:has(.navbar__item:nth-child(even):is(:hover, :focus-within))::before { animation: gooeyB 250ms 1; }
+
+@keyframes gooeyA { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(var(--sx), var(--sy)); } }
+@keyframes gooeyB { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(var(--sx), var(--sy)); } }
+
+/* ---------- Celular: barra inferior ---------- */
+@media (max-width: 640px) {
+  .navbar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .navbar__menu {
+    --sx: 1.5;
+    --sy: 0.5;
+    display: flex;
+    width: 100%;
+  }
+
+  .navbar__item { flex: 1; min-width: 0; }
+
+  .navbar__link {
+    width: 100%;
+    height: 4rem;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  /* Etiqueta siempre visible */
+  .navbar__link span {
+    position: static;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    background: none;
+    box-shadow: none;
+    font-size: 0.65rem;
+    opacity: 1;
+    transform: none;
+  }
+
+  .navbar__link.is-active::after {
+    left: 50%;
+    top: 0;
+    width: 1.5rem;
+    height: 4px;
+    margin-left: -0.75rem;
+  }
+
+  .navbar__menu::before {
+    top: 0.25rem;
+    left: calc(100% / var(--items) * var(--n) + 0.25rem);
+    width: calc(100% / var(--items) - 0.5rem);
+    height: 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar__menu::before,
+  .navbar__link,
+  .navbar__link span { transition: none; }
+  .navbar__menu::before { animation: none !important; }
+}

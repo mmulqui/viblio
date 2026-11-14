@@ -1,0 +1,37 @@
+.seccion { margin: 1.75rem 0 0.75rem; font-size: 1.15rem; font-weight: 600; }
+.vacio { margin: 0 0 1rem; padding: 1rem 0; }
+.vacio a { color: var(--verde-oscuro); text-decoration: underline; }
+
+.lista { margin: 0 0 1rem; padding: 0; list-style: none; display: grid; gap: 0.75rem; }
+
+.prestamo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1.1rem 1.25rem;
+  background: #fff;
+  border-radius: 16px;
+  border-left: 6px solid var(--verde);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+.prestamo--pronto   { border-left-color: #c98a00; }
+.prestamo--vencido  { border-left-color: #a63d2f; }
+.prestamo--devuelto { border-left-color: #9bb8ac; }
+
+.prestamo__titulo { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.prestamo__meta   { margin: 0.25rem 0 0; font-size: 0.875rem; opacity: 0.85; }
+
+.etiqueta {
+  flex: none;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.etiqueta--ok       { background: var(--menta); color: var(--verde-oscuro); }
+.etiqueta--pronto   { background: #fff1cc; color: #7a5200; }
+.etiqueta--vencido  { background: #fbece9; color: #862f24; }
+.etiqueta--devuelto { background: #eef2f0; color: #4a5a53; }

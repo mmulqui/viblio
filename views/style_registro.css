@@ -93,7 +93,6 @@ body{
     font-size: 16px;
 }
 
-/* CORREGIDO: era .form_registro (guión bajo) — ahora unificado en un solo selector */
 .form-registro input[type="text"],
 .form-registro input[type="email"],
 .form-registro input[type="password"],
@@ -126,6 +125,18 @@ body{
     border-bottom: 2px solid white;
 }
 
+/* Calendario con ícono blanco sobre el fondo verde */
+.form-registro input[type="date"] {
+    color-scheme: dark;
+}
+
+/* Autocompletado del navegador: mantiene el fondo verde y el texto blanco */
+.form-registro input:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff;
+    -webkit-box-shadow: 0 0 0 1000px #10B981 inset;
+    caret-color: #ffffff;
+}
+
 .btn-registrarse{
     width: 250px;
     height: 50px;
@@ -139,4 +150,82 @@ body{
     position: absolute;
     top: 400px;
     right: 100px;
+}
+
+
+/* ============================================================
+   CELULAR / TABLET CHICA
+   Tira blanca arriba con la flecha de volver, y el panel verde
+   de borde curvo ocupando el resto de la pantalla, con los
+   campos en una sola columna.
+   ============================================================ */
+@media (max-width: 820px){
+
+    body{
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: stretch;
+    }
+
+    .registro_container{
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding-top: 56px;   /* tira blanca donde va la flecha */
+    }
+
+    .fondo_verde{
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 32px 24px 40px;
+        justify-content: flex-start;
+        align-items: stretch;
+        border-radius: 72px 0 0 0;
+    }
+
+    /* La flecha queda en la tira blanca, en su verde original */
+    .btn-volver{
+        top: -36px;
+        left: 26px;
+    }
+
+    /* Zona de toque más grande sin cambiar el dibujo */
+    .btn-volver::after{
+        content: "";
+        position: absolute;
+        inset: -14px;
+    }
+
+    .titulo-registro{
+        position: static;
+        font-size: 28px;
+        margin-bottom: 24px;
+    }
+
+    .form-registro{
+        width: 100%;
+        max-width: 480px;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .columnas{
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin-bottom: 12px;
+    }
+
+    .form-registro input[type="date"]{
+        min-height: 42px;
+    }
+
+    .btn-registrarse{
+        position: static;
+        width: 100%;
+        height: 52px;
+        margin-top: 8px;
+    }
 }
