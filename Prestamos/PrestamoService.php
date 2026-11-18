@@ -23,9 +23,9 @@ class PrestamoService
      *
      * @return string|null Mensaje de error, o null si el préstamo se registró correctamente.
      */
-    public function solicitarPrestamo(int $idLibro, int $idUsuario): ?string
+    public function solicitarPrestamo(int $idLibro, int $idUsuario, ?int $idReserva = null): ?string
     {
-        $resultado = $this->repo->crear($idLibro, $idUsuario);
+        $resultado = $this->repo->crear($idLibro, $idUsuario, $idReserva);
         return $resultado['ok'] ? null : $resultado['error'];
     }
 

@@ -31,6 +31,7 @@ if (!in_array($filtro, ['todos', 'prestamos', 'reservas'], true)) {
 
 $prestamoRepo = new PrestamoRepository();
 $prestamoRepo->marcarVencidos();
+(new ReservaRepository())->cancelarVencidas();
 
 // Una sola lista con préstamos y reservas, cada uno con su fecha de referencia.
 $movimientos = [];

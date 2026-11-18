@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
+require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 
 AuthGuard::verificarSesion();
 if (($_SESSION['rol'] ?? '') === 'bibliotecario') {
@@ -21,9 +22,12 @@ function fecha(?string $f): string
 
 $idUsuario = (int) $_SESSION['id_usuario'];
 
+$repo = new ReservaRepository();
+$repo->cancelarVencidas(); // las que pasaron el plazo sin retirarse figuran como canceladas
+
 $pendientes = [];
 $historial  = [];
-foreach ((new ReservaRepository())->listarPorUsuario($idUsuario) as $r) {
+foreach ($repo->listarPorUsuario($idUsuario) as $r) {
     if ((int) $r['id_estado'] === ReservaRepository::ESTADO_PENDIENTE) {
         $pendientes[] = $r;
     } else {
@@ -56,7 +60,7 @@ $paginaActual = 'reservas';
         <h1>Mis reservas</h1>
         <p class="lema">
         Tenés <strong><?= count($pendientes) ?></strong> reserva<?= count($pendientes) === 1 ? '' : 's' ?> pendiente<?= count($pendientes) === 1 ? '' : 's' ?>.
-        Una reserva se marca como cumplida cuando retirás el libro en la biblioteca.
+        Cada reserva aparta el libro <?= PrestamoRepository::HORAS_RESERVA ?> horas: retiralo en la biblioteca en ese plazo, que es cuando se registra el préstamo.
     </p>
     </div>
     <a class="salir" href="logout.php">Cerrar sesión</a>
@@ -75,7 +79,8 @@ $paginaActual = 'reservas';
                         <h3 class="prestamo__titulo"><?= h($r['titulo']) ?></h3>
                         <p class="prestamo__meta">
                             Reservado el <?= fecha($r['fecha_solicitud']) ?>
-                            · Reserva N.º <strong><?= h((string) $r['codigo_reserva']) ?></strong>
+                            · Retiralo antes del <strong><?= h(date('d/m/Y H:i', strtotime($r['fecha_solicitud'] . ' +' . PrestamoRepository::HORAS_RESERVA . ' hours'))) ?></strong>
+                            · Reserva N.º <?= h((string) $r['codigo_reserva']) ?>
                         </p>
                     </div>
                     <div class="acciones">

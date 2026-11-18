@@ -77,7 +77,7 @@ class ReservaController
         $this->auditar('solicitar_reserva', $error, $idLibro, $idUsuario);
         $error
             ? $this->alerta('warning', 'Ups', $error)
-            : $this->alerta('success', '¡Éxito!', 'Reserva registrada correctamente.');
+            : $this->alerta('success', '¡Éxito!', 'Reserva registrada. Tenés ' . PrestamoRepository::HORAS_RESERVA . ' horas para retirar el libro en la biblioteca.');
     }
 
     /** Cancela una reserva del usuario logueado. */

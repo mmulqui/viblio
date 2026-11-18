@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/Prestamos/Prestamo.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoService.php';
 require_once dirname(__DIR__) . '/Multas/MultaService.php';
+require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 
 class PrestamoController
 {
@@ -26,6 +27,7 @@ class PrestamoController
             'listar'    => $this->listar(),
             'solicitar' => $this->solicitar(),
             'registrar' => $this->registrar(),
+            'entregar'  => $this->entregar(),
             'devolver'  => $this->devolver(),
             default     => $this->redirigir(),
         };
@@ -63,22 +65,42 @@ class PrestamoController
             : $this->alerta('success', '¡Éxito!', 'Préstamo registrado correctamente.');
     }
 
-    /** Solicita un préstamo para el usuario logueado. */
+    /**
+     * Ya no se presta desde el catálogo: el préstamo nace cuando el bibliotecario entrega el
+     * libro (ver entregar()). Esta acción solo avisa a quien la invoque.
+     */
     public function solicitar(): void
     {
+        $this->alerta('warning', 'Ups', 'Los préstamos los registra el bibliotecario cuando retirás el libro. Reservalo desde el catálogo.');
+    }
+
+    /**
+     * El bibliotecario entrega el libro de una reserva pendiente: recién ahí nace el préstamo
+     * (con su plazo) y la reserva queda cumplida. Se vuelven a validar stock, límite y sanción.
+     */
+    public function entregar(): void
+    {
+        AuthGuard::verificarRol(['bibliotecario']);
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirigir();
             return;
         }
 
-        $idLibro   = (int) ($_POST['id_libro'] ?? 0);
-        $idUsuario = (int) $_SESSION['id_usuario'];
+        $idReserva = (int) ($_POST['id_reserva'] ?? 0);
+        $reserva   = (new ReservaRepository())->obtenerPorId($idReserva);
+        if (!$reserva) {
+            $this->alerta('warning', 'Ups', 'La reserva no existe.', 'reservas');
+        }
 
-        $error = $this->service->solicitarPrestamo($idLibro, $idUsuario);
-        $this->auditar('solicitar_prestamo', $error, $idLibro, $idUsuario);
+        $idLibro   = (int) $reserva['id_libro'];
+        $idUsuario = (int) $reserva['id_usuario'];
+
+        $error = $this->service->solicitarPrestamo($idLibro, $idUsuario, $idReserva);
+        $this->auditar('entregar_reserva', $error, $idLibro, $idUsuario);
         $error
-            ? $this->alerta('warning', 'Ups', $error)
-            : $this->alerta('success', '¡Éxito!', 'Préstamo registrado correctamente.');
+            ? $this->alerta('warning', 'Ups', $error, 'reservas')
+            : $this->alerta('success', '¡Éxito!', 'Libro entregado: el préstamo quedó registrado y la reserva cumplida.', 'reservas');
     }
 
     /** Registra la devolución de un préstamo. Solo el bibliotecario puede hacerlo. */

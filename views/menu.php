@@ -40,6 +40,7 @@ $libroRepo    = new LibroRepository();
 $perfilRepo   = new PerfilRepository();
 $prestamoRepo = new PrestamoRepository();
 $reservaRepo  = new ReservaRepository();
+$reservaRepo->cancelarVencidas(); // las reservas sin retirar pasadas las 48 h se cancelan
 $estadisticaRepo = new EstadisticaRepository();
 
 // Dato para el gráfico del dashboard de estadísticas
@@ -714,7 +715,7 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
                                         <?php endif; ?>
                                     <?php endforeach; ?>
                                 </select>
-                                <small style="color:#888;font-size:11px;">Solo se puede reservar un libro que no esté prestado.</small>
+                                <small style="color:#888;font-size:11px;">Aparta un ejemplar por 48 horas. Cuando el usuario retira el libro, usá el botón de entregar en la lista.</small>
                             </div>
                         </div>
                         <div class="form-buttons">
@@ -743,6 +744,7 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
                                 <th>Alumno</th>
                                 <th>DNI</th>
                                 <th>Fecha Solicitud</th>
+                                <th>Vence</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -755,9 +757,20 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
                                 <td><?= htmlspecialchars($r['nombre'] . ' ' . $r['apellido']) ?></td>
                                 <td><?= htmlspecialchars($r['dni']) ?></td>
                                 <td><?= htmlspecialchars($r['fecha_solicitud']) ?></td>
+                                <td><?= $r['estado_descripcion'] === 'pendiente' ? htmlspecialchars(date('d/m/Y H:i', strtotime($r['fecha_solicitud'] . ' +' . PrestamoRepository::HORAS_RESERVA . ' hours'))) : '-' ?></td>
                                 <td><?= htmlspecialchars($r['estado_descripcion']) ?></td>
                                 <td class="acciones">
                                     <?php if ($r['estado_descripcion'] === 'pendiente'): ?>
+                                    <form action="../controlers/procesar_prestamo.php" method="POST" style="display:inline;">
+                                        <input type="hidden" name="accion" value="entregar">
+                                        <input type="hidden" name="id_reserva" value="<?= (int) $r['id_reserva'] ?>">
+                                        <button type="button" class="btn-modificar" title="Entregar libro (registrar préstamo)"
+                                            data-libro="<?= htmlspecialchars($r['titulo']) ?>"
+                                            data-usuario="<?= htmlspecialchars($r['nombre'] . ' ' . $r['apellido']) ?>"
+                                            onclick="confirmarEntrega(this)">
+                                            <ion-icon name="checkmark-done-outline"></ion-icon>
+                                        </button>
+                                    </form>
                                     <form action="../controlers/procesar_reserva.php" method="POST" style="display:inline;">
                                         <input type="hidden" name="accion" value="cancelar">
                                         <input type="hidden" name="id_reserva" value="<?= (int) $r['id_reserva'] ?>">
@@ -1366,6 +1379,16 @@ $tabActiva   = in_array($_GET['tab'] ?? '', $tabsValidas, true)
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
             return Math.max(0, Math.round((hoy - venceFecha) / 86400000));
+        }
+
+        // Entregar el libro de una reserva: confirma con la alerta del sistema y recién ahí envía el formulario.
+        function confirmarEntrega(boton) {
+            mdConfirm(
+                'Se registra el préstamo de «' + boton.dataset.libro + '» a ' + boton.dataset.usuario +
+                ' y la reserva queda cumplida.',
+                function () { boton.form.submit(); },
+                'Entregar libro'
+            );
         }
 
         function abrirDevolucion(boton) {

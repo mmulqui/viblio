@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/Core/AuthGuard.php';
 require_once dirname(__DIR__) . '/Libros/LibroRepository.php';
 require_once dirname(__DIR__) . '/Prestamos/PrestamoRepository.php';
+require_once dirname(__DIR__) . '/Reservas/ReservaRepository.php';
 require_once dirname(__DIR__) . '/Multas/MultaRepository.php';
 
 AuthGuard::verificarSesion();
@@ -24,10 +25,14 @@ $busqueda  = trim($_GET['q'] ?? '');
 $sancionHasta = (new MultaRepository())->sancionVigenteHasta($idUsuario);
 $sancionTexto = $sancionHasta ? date('d/m/Y H:i', strtotime($sancionHasta)) : null;
 
-$prestamoRepo     = new PrestamoRepository();
-$prestamosActivos = $prestamoRepo->contarActivosPorUsuario($idUsuario);
-$limite           = PrestamoRepository::limitePorPerfil($rol);
-$enLimite         = $limite !== null && $prestamosActivos >= $limite;
+// El límite cuenta los préstamos activos y las reservas pendientes.
+$reservaRepo = new ReservaRepository();
+$reservaRepo->cancelarVencidas();
+$comprometidos = (new PrestamoRepository())->contarActivosPorUsuario($idUsuario)
+               + $reservaRepo->contarVigentesPorUsuario($idUsuario);
+$limite   = PrestamoRepository::limitePorPerfil($rol);
+$enLimite = $limite !== null && $comprometidos >= $limite;
+$apartados = $reservaRepo->vigentesPorLibro(); // ejemplares apartados por reservas: [id_libro => n]
 
 // listarActivos() devuelve una fila por cada combinación autor/editorial/categoría:
 // se agrupa por libro para no mostrar el mismo título repetido.
@@ -69,7 +74,7 @@ $paginaActual = 'libros';
 <header class="cabecera">
     <div>
         <h1>Libros</h1>
-        <p class="lema">Buscá un libro y pedilo en préstamo o reservalo.</p>
+        <p class="lema">Buscá un libro y reservalo: lo apartamos <?= PrestamoRepository::HORAS_RESERVA ?> horas para que lo retires en la biblioteca.</p>
     </div>
     <a class="salir" href="logout.php">Cerrar sesión</a>
 </header>
@@ -79,12 +84,12 @@ $paginaActual = 'libros';
     <?php if ($sancionTexto): ?>
         <p class="aviso aviso--alerta" role="alert">
             Tenés una sanción vigente hasta el <strong><?= h($sancionTexto) ?></strong>:
-            no podés pedir libros ni reservar hasta esa fecha.
+            no podés reservar libros hasta esa fecha.
         </p>
     <?php elseif ($enLimite): ?>
         <p class="aviso" role="status">
-            Ya tenés <strong><?= $prestamosActivos ?> de <?= $limite ?></strong> préstamos activos.
-            Podés reservar, pero para pedir otro libro tenés que devolver uno.
+            Ya tenés <strong><?= $comprometidos ?> de <?= $limite ?></strong> entre préstamos activos y reservas pendientes.
+            Para reservar otro libro tenés que devolver uno o cancelar una reserva.
         </p>
     <?php endif; ?>
 
@@ -103,7 +108,7 @@ $paginaActual = 'libros';
     <?php else: ?>
         <section class="libros" aria-label="Libros">
             <?php foreach ($libros as $id => $l): ?>
-                <?php $hayStock = $l['stock'] > 0; ?>
+                <?php $disponibles = max(0, $l['stock'] - ($apartados[$id] ?? 0)); $hayStock = $disponibles > 0; ?>
                 <article class="libro">
                     <h2 class="libro__titulo"><?= h($l['titulo']) ?></h2>
                     <p class="libro__autor"><?= h(implode(', ', $l['autores']) ?: 'Autor sin cargar') ?></p>
@@ -113,25 +118,17 @@ $paginaActual = 'libros';
                     </p>
                     <p class="libro__meta"><?= h(implode(', ', array_merge($l['categorias'], $l['generos']))) ?></p>
                     <p class="libro__stock <?= $hayStock ? '' : 'libro__stock--agotado' ?>">
-                        <?= $hayStock ? 'Disponible: ' . $l['stock'] . ($l['stock'] === 1 ? ' ejemplar' : ' ejemplares') : 'Sin stock' ?>
+                        <?= $hayStock ? 'Disponible: ' . $disponibles . ($disponibles === 1 ? ' ejemplar' : ' ejemplares') : 'Sin ejemplares disponibles' ?>
                     </p>
 
                     <div class="libro__acciones">
-                        <form method="post" action="../controlers/procesar_prestamo.php"
-                              class="js-confirmar" data-titulo="Pedir préstamo"
-                              data-msg="¿Pedir en préstamo «<?= h($l['titulo']) ?>»? Tenés una semana para devolverlo.">
-                            <input type="hidden" name="accion" value="solicitar">
-                            <input type="hidden" name="id_libro" value="<?= $id ?>">
-                            <input type="hidden" name="volver" value="catalogo.php">
-                            <button type="submit" <?= (!$hayStock || $sancionTexto || $enLimite) ? 'disabled' : '' ?>>Pedir préstamo</button>
-                        </form>
                         <form method="post" action="../controlers/procesar_reserva.php"
                               class="js-confirmar" data-titulo="Reservar"
-                              data-msg="¿Reservar «<?= h($l['titulo']) ?>»?">
+                              data-msg="¿Reservar «<?= h($l['titulo']) ?>»? Lo apartamos <?= PrestamoRepository::HORAS_RESERVA ?> horas: retiralo en la biblioteca en ese plazo.">
                             <input type="hidden" name="accion" value="solicitar">
                             <input type="hidden" name="id_libro" value="<?= $id ?>">
                             <input type="hidden" name="volver" value="catalogo.php">
-                            <button type="submit" class="btn-sec" <?= $sancionTexto ? 'disabled' : '' ?>>Reservar</button>
+                            <button type="submit" <?= (!$hayStock || $sancionTexto || $enLimite) ? 'disabled' : '' ?>>Reservar</button>
                         </form>
                     </div>
                 </article>

@@ -11,6 +11,11 @@ class PrestamoRepository
     public const ESTADO_DEVUELTO = 2;
     public const ESTADO_VENCIDO  = 3;
 
+    /** Horas que una reserva pendiente aparta un ejemplar antes de vencer. */
+    public const HORAS_RESERVA = 48;
+    private const RESERVA_PENDIENTE = 1; // ids de estado_reserva (ReservaRepository tiene los mismos)
+    private const RESERVA_CUMPLIDA  = 2;
+
     public const LIMITE_PRESTAMOS_ALUMNO = 3;
     public const DIAS_PRESTAMO           = 7;
 
@@ -142,9 +147,14 @@ class PrestamoRepository
      * transacción con bloqueo de fila (FOR UPDATE), para que dos pedidos
      * simultáneos del mismo libro no pasen la validación al mismo tiempo.
      *
+     * Con $idReserva el préstamo se crea al ENTREGAR esa reserva: se valida que siga pendiente y
+     * vigente y que sea del mismo usuario y libro, y se marca cumplida en la misma transacción.
+     * Los ejemplares apartados por reservas pendientes de OTROS usuarios no se pueden prestar, y
+     * las reservas pendientes del usuario cuentan dentro de su límite de préstamos.
+     *
      * @return array{ok: bool, error: ?string, id_prestamo: ?int}
      */
-    public function crear(int $idLibro, int $idUsuario): array
+    public function crear(int $idLibro, int $idUsuario, ?int $idReserva = null): array
     {
         $this->db->begin_transaction();
         try {
@@ -169,6 +179,24 @@ class PrestamoRepository
                 return ['ok' => false, 'error' => 'No hay stock disponible de ese libro.', 'id_prestamo' => null];
             }
 
+            // Los ejemplares apartados por reservas pendientes (vigentes) de otros usuarios no se prestan.
+            $horas     = self::HORAS_RESERVA;
+            $pendiente = self::RESERVA_PENDIENTE;
+            $excluir   = $idReserva ?? 0;
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) AS total FROM reserva
+                 WHERE id_libro = ? AND id_estado = ? AND id_reserva <> ?
+                   AND fecha_solicitud > DATE_SUB(NOW(), INTERVAL ? HOUR)"
+            );
+            $stmt->bind_param('iiii', $idLibro, $pendiente, $excluir, $horas);
+            $stmt->execute();
+            $reservadas = (int) $stmt->get_result()->fetch_assoc()['total'];
+            $stmt->close();
+            if ((int) $fila['stock'] - $reservadas < 1) {
+                $this->db->rollback();
+                return ['ok' => false, 'error' => 'Los ejemplares que quedan están reservados por otros usuarios.', 'id_prestamo' => null];
+            }
+
             // Bloquea también la fila del usuario, para que dos préstamos simultáneos
             // del mismo alumno no burlen el límite de 3 contando "al mismo tiempo".
             $stmt = $this->db->prepare("SELECT id_perfil FROM usuario WHERE id_usuario = ? FOR UPDATE");
@@ -179,6 +207,24 @@ class PrestamoRepository
             if (!$filaUsuario) {
                 $this->db->rollback();
                 return ['ok' => false, 'error' => 'El usuario no existe.', 'id_prestamo' => null];
+            }
+
+            // Entrega de una reserva: tiene que seguir pendiente y vigente, y ser de este usuario y libro.
+            if ($idReserva !== null) {
+                $stmt = $this->db->prepare(
+                    "SELECT id_usuario, id_libro, id_estado,
+                            (fecha_solicitud > DATE_SUB(NOW(), INTERVAL ? HOUR)) AS vigente
+                     FROM reserva WHERE id_reserva = ? FOR UPDATE"
+                );
+                $stmt->bind_param('ii', $horas, $idReserva);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                if (!$r || (int) $r['id_usuario'] !== $idUsuario || (int) $r['id_libro'] !== $idLibro
+                    || (int) $r['id_estado'] !== $pendiente || !(int) $r['vigente']) {
+                    $this->db->rollback();
+                    return ['ok' => false, 'error' => 'La reserva ya no está pendiente o venció. Si corresponde, registrá un préstamo nuevo.', 'id_prestamo' => null];
+                }
             }
 
             // Sanción vigente (multa): mientras dure, no puede pedir libros, sea cual sea su rol.
@@ -207,10 +253,14 @@ class PrestamoRepository
 
             // Perfil sin límite (profesor): no hace falta contar los préstamos activos.
             if ($limite !== null) {
+                // Cuentan los préstamos activos y las reservas pendientes (menos la que se está entregando).
                 $stmt = $this->db->prepare(
-                    "SELECT COUNT(*) AS total FROM prestamo WHERE id_usuario = ? AND id_estado = ?"
+                    "SELECT (SELECT COUNT(*) FROM prestamo WHERE id_usuario = ? AND id_estado = ?)
+                          + (SELECT COUNT(*) FROM reserva
+                             WHERE id_usuario = ? AND id_estado = ? AND id_reserva <> ?
+                               AND fecha_solicitud > DATE_SUB(NOW(), INTERVAL ? HOUR)) AS total"
                 );
-                $stmt->bind_param('ii', $idUsuario, $estadoActivo);
+                $stmt->bind_param('iiiiii', $idUsuario, $estadoActivo, $idUsuario, $pendiente, $excluir, $horas);
                 $stmt->execute();
                 $total = (int) $stmt->get_result()->fetch_assoc()['total'];
                 $stmt->close();
@@ -218,7 +268,7 @@ class PrestamoRepository
                     $this->db->rollback();
                     return [
                         'ok'          => false,
-                        'error'       => 'Alcanzaste el límite de ' . $limite . ' préstamos simultáneos.',
+                        'error'       => 'Alcanzaste el límite de ' . $limite . ' entre préstamos activos y reservas pendientes.',
                         'id_prestamo' => null,
                     ];
                 }
@@ -236,6 +286,20 @@ class PrestamoRepository
             $stmt->execute();
             $idPrestamo = $stmt->insert_id;
             $stmt->close();
+
+            // Si se entrega una reserva, queda cumplida en la misma transacción.
+            if ($idReserva !== null) {
+                $cumplida = self::RESERVA_CUMPLIDA;
+                $stmt = $this->db->prepare("UPDATE reserva SET id_estado = ? WHERE id_reserva = ? AND id_estado = ?");
+                $stmt->bind_param('iii', $cumplida, $idReserva, $pendiente);
+                $stmt->execute();
+                $actualizada = $stmt->affected_rows === 1;
+                $stmt->close();
+                if (!$actualizada) {
+                    $this->db->rollback();
+                    return ['ok' => false, 'error' => 'No se pudo cumplir la reserva.', 'id_prestamo' => null];
+                }
+            }
 
             $this->db->commit();
             return ['ok' => true, 'error' => null, 'id_prestamo' => $idPrestamo];
