@@ -51,15 +51,18 @@ $paginaActual = 'reservas';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Mis reservas</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
-    </div>
-    <p class="lema">
+        <p class="lema">
         Tenés <strong><?= count($pendientes) ?></strong> reserva<?= count($pendientes) === 1 ? '' : 's' ?> pendiente<?= count($pendientes) === 1 ? '' : 's' ?>.
         Una reserva se marca como cumplida cuando retirás el libro en la biblioteca.
     </p>
+    </div>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <h2 class="seccion">Pendientes</h2>
     <?php if (!$pendientes): ?>

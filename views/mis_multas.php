@@ -63,12 +63,15 @@ $paginaActual = 'multas';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Mis multas</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
+        <p class="lema">Las sanciones se aplican por devolver un libro con retraso o en mal estado.</p>
     </div>
-    <p class="lema">Las sanciones se aplican por devolver un libro con retraso o en mal estado.</p>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <?php if ($hasta): ?>
         <section class="situacion situacion--alerta" role="alert">

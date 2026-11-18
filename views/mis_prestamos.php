@@ -76,12 +76,10 @@ $paginaActual = 'prestamos';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Mis préstamos</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
-    </div>
-    <p class="lema">
+        <p class="lema">
         <?php if ($limite !== null): ?>
             Tenés <strong><?= $activos ?> de <?= $limite ?></strong> préstamos activos.
         <?php else: ?>
@@ -89,6 +87,11 @@ $paginaActual = 'prestamos';
         <?php endif; ?>
         Las devoluciones se registran en la biblioteca.
     </p>
+    </div>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <h2 class="seccion">Para devolver</h2>
     <?php if (!$pendientes): ?>

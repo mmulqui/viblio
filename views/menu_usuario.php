@@ -61,13 +61,15 @@ $paginaActual = 'inicio';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>¡Bienvenido, <?= $nombre ?>!</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
+        <p class="lema">Donde cada libro encuentra su lugar y cada lector, una nueva historia.</p>
     </div>
-    <p class="lema">Donde cada libro encuentra su lugar y cada lector, una nueva historia.</p>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
 
+<main class="contenido">
     <section class="resumen" aria-label="Tu resumen">
         <a class="dato" href="mis_prestamos.php">
             <span class="dato__valor">

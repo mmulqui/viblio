@@ -97,12 +97,15 @@ $paginaActual = 'historial';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Historial</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
+        <p class="lema">Todo lo que pediste y reservaste, del más reciente al más antiguo.</p>
     </div>
-    <p class="lema">Todo lo que pediste y reservaste, del más reciente al más antiguo.</p>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <nav class="filtros" aria-label="Filtrar historial">
         <?php foreach ($filtros as $clave => $etiqueta): ?>

@@ -66,12 +66,15 @@ $paginaActual = 'libros';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Libros</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
+        <p class="lema">Buscá un libro y pedilo en préstamo o reservalo.</p>
     </div>
-    <p class="lema">Buscá un libro y pedilo en préstamo o reservalo.</p>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <?php if ($sancionTexto): ?>
         <p class="aviso aviso--alerta" role="alert">

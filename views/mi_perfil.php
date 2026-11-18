@@ -39,12 +39,15 @@ $paginaActual = 'perfil';
 
 <?php include __DIR__ . '/navbar_usuario.php'; ?>
 
-<main class="contenido">
-    <div class="encabezado">
+<header class="cabecera">
+    <div>
         <h1>Mi perfil</h1>
-        <a class="salir" href="logout.php">Cerrar sesión</a>
+        <p class="lema">Mantené tus datos al día. El DNI y el tipo de cuenta los administra la biblioteca.</p>
     </div>
-    <p class="lema">Mantené tus datos al día. El DNI y el tipo de cuenta los administra la biblioteca.</p>
+    <a class="salir" href="logout.php">Cerrar sesión</a>
+</header>
+
+<main class="contenido">
 
     <section class="tarjeta" aria-labelledby="t-cuenta">
         <h2 id="t-cuenta">Mi cuenta</h2>
